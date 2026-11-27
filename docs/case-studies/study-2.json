@@ -1,0 +1,44 @@
+{
+  "baseline": "i(8-i)",
+  "input_sha256": "efa1e01aa31882af7f50ac7f573faddcaa2c71502ab8c785baa93e6bbb8fee57",
+  "inputs": {
+    "boundaries": "absorbing endpoints",
+    "dataset": "synthetic",
+    "graph": "path 0\u20138",
+    "initial_state": "all interior states"
+  },
+  "limitations": "Finite fair game.",
+  "model": "Gambler's ruin",
+  "peak_rss_bytes": 107266048,
+  "protocol": "first boundary entry",
+  "results": {
+    "exact_mean": [
+      7,
+      12,
+      15,
+      16,
+      15,
+      12,
+      7
+    ],
+    "mean": [
+      7.0,
+      12.0,
+      14.999999999999998,
+      16.0,
+      15.0,
+      12.0,
+      7.0
+    ]
+  },
+  "runtime_s": 0.0024392920000000373,
+  "schema": 1,
+  "seed": 0,
+  "solver": "linear solve",
+  "tolerance": 1e-10,
+  "versions": {
+    "numpy": "2.0.2",
+    "python": "3.9.6",
+    "scipy": "1.13.1"
+  }
+}

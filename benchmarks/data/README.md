@@ -1,0 +1,5 @@
+# Crambin contact graph
+
+The CSV contains the 46 chain-A C-alpha coordinates (angstroms) and HELIX annotations for plant crambin. Source: [Protein Data Bank entry 1CRN](https://doi.org/10.2210/pdb1CRN/pdb). Source-coordinate mirror: [1crn.pdb](https://github.com/nglviewer/ngl/blob/0db88033650614103be761f151efc923b66e977e/data/1crn.pdb), Git blob e05c7c363fe90c17c19eb654c77d15defcdff478. The benchmark prints a SHA-256 digest of the derived CSV. Each row represents one residue. HELIX labels cover residues 7–19 and 23–30 inclusive.
+
+The benchmark fixes an 8 Å cutoff, excludes self edges and uses binary undirected contacts. All training seeds come from the first helix. All test residues have sequence index at least 22. An unlabelled helix outcome means outside the deposited HELIX ranges. The experiment uses coordinates from the entire protein and measures transductive ranking within a single known structure. Related work on quantum walks and residue networks includes the [Algorithmiq/IBM demonstration](https://zenodo.org/records/22654432). This experiment uses classical numerical evolution.

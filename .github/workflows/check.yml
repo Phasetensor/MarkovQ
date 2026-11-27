@@ -24,14 +24,6 @@ jobs:
         with:
           name: applied-scientific-studies
           path: /tmp/markovq-studies
-      - name: Development diagnostics
-        run: |
-          python -m mypy --ignore-missing-imports markovq || true
-          python -m ruff check --fix --unsafe-fixes . || true
-          python -m ruff format .
-          git diff | gzip -c | base64 -w0 | sed 's/^/FORMATTED_PATCH=/'
-          echo
-          git restore .
       - if: matrix.python == '3.12'
         run: python -m coverage run --branch --source=markovq -m pytest -q
       - if: matrix.python == '3.9'

@@ -41,18 +41,24 @@ def phase_experiment(
     if decision != "READY":
         raise ValueError("calibration readiness criteria failed")
     history = stability(records, at, timedelta(days=7), timedelta(days=2))
+
     def probability(metric: str, bit: int) -> float:
         value = lookup[metric, (bit,)].value
         if value is None or not 0 <= value <= 1:
             raise ValueError("invalid readout probability")
         return value
 
-    models = [Binary(probability("false_one", i), probability("false_zero", i)) for i in (0, 1)]
+    models = [
+        Binary(probability("false_one", i), probability("false_zero", i))
+        for i in (0, 1)
+    ]
     calibration_intervals = {}
     for key in sorted(expected):
         r = lookup[key]
-        if r.value is None or not r.sample_size or not np.isclose(
-            r.value * r.sample_size, round(r.value * r.sample_size)
+        if (
+            r.value is None
+            or not r.sample_size
+            or not np.isclose(r.value * r.sample_size, round(r.value * r.sample_size))
         ):
             raise ValueError("require empirical binary calibration counts")
         calibration_intervals[str(key)] = interval(

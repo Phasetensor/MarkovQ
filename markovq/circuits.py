@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 from time import perf_counter
-from typing import Optional
+from typing import Any, Optional
 
 import numpy as np
 from numpy.typing import ArrayLike
@@ -73,7 +73,7 @@ def simulate(
     prepared.compose(circuit, inplace=True)
     probabilities = Statevector.from_instruction(prepared).probabilities()
     measured = prepared.measure_all(inplace=False)
-    kwargs = (
+    kwargs: dict[str, Any] = (
         {"basis_gates": ["rz", "sx", "x", "cx"]}
         if backend is None
         else {"backend": backend}
@@ -86,7 +86,7 @@ def simulate(
         "probabilities": probabilities,
         "counts": counts,
         "logical_qubits": n,
-        "ancillary_qubits": compiled.num_qubits - n,
+        "ancillary_qubits": len({q for op in compiled.data for q in op.qubits}) - n,
         "depth": compiled.depth(),
         "two_qubit_gates": sum(
             len(inst.qubits) == 2 and inst.operation.name != "barrier"

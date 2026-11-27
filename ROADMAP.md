@@ -1619,3 +1619,7 @@ The final objective is to establish MarkovQ as a rigorous, reproducible open-sou
 ## Development checkpoint — numerical consolidation of modules 01–20
 
 The [consolidation review](docs/consolidation-review.md) records the evidence and limits for R01–R08. The next five modules remain outside this checkpoint.
+
+## Development checkpoint — modules 21–25
+
+The [applied module index](docs/applied.md) records implemented capabilities, evidence and limits. Publication remains subject to owner approval.

@@ -1,6 +1,6 @@
 # MarkovQ
 
-PhaseTensor’s scientific Python framework for classical and quantum stochastic dynamics. The [master roadmap](ROADMAP.md) defines 25 modules. The [development branch](https://github.com/Phasetensor/MarkovQ/tree/classical-spectral-foundations) implements modules 01–20, from classical Markov processes and spectral graph operators to quantum walks, monitored detection, graph search and Lindblad evolution.
+PhaseTensor’s scientific Python framework for classical and quantum stochastic dynamics. The [master roadmap](ROADMAP.md) defines 25 modules. The [development branch](https://github.com/Phasetensor/MarkovQ/tree/classical-spectral-foundations) implements modules 01–25, from classical Markov processes and spectral graph operators to quantum walks, monitored detection, graph search, Lindblad evolution, noise channels, network ranking, partitioned simulation, circuit integration and scientific reporting.
 
 ## Try the development version
 
@@ -25,3 +25,5 @@ Install the independent reference solvers with `python -m pip install '.[referen
 [Scientific specifications and traceability](https://github.com/Phasetensor/MarkovQ/blob/classical-spectral-foundations/docs/foundations.md) · [Measured benchmark results](https://github.com/Phasetensor/MarkovQ/blob/classical-spectral-foundations/docs/benchmark-results.json) · [License](LICENSE)
 
 [Numerical consolidation review](docs/consolidation-review.md) · [Precision and solver guidance](docs/numerical-stability.md) · [Scaling measurements](docs/scalability-benchmarks.md)
+
+[Applied modules, case studies and benchmark index](docs/applied.md)
