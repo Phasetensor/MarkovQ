@@ -33,8 +33,12 @@ class SearchResult(NamedTuple):
         return {
             "initial_preparations": trials,
             "final_measurements": trials,
-            "marking_queries": trials * self.discrete_queries[i] if self.discrete_queries[i] else 0.0,
-            "analog_oracle_time": trials * self.oracle_time[i] if self.oracle_time[i] else 0.0,
+            "marking_queries": trials * self.discrete_queries[i]
+            if self.discrete_queries[i]
+            else 0.0,
+            "analog_oracle_time": trials * self.oracle_time[i]
+            if self.oracle_time[i]
+            else 0.0,
         }
 
 

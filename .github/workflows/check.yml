@@ -15,19 +15,14 @@ jobs:
         with:
           python-version: ${{ matrix.python }}
       - run: python -m pip install '.[references]' pytest coverage mypy ruff build twine
-      - name: Development diagnostics
-        run: |
-          python -m mypy --ignore-missing-imports markovq || true
-          python -m ruff check --fix --unsafe-fixes . || true
-          python -m ruff format .
-          git diff | gzip -c | base64 -w0 | sed 's/^/FORMATTED_PATCH=/'
-          echo
-          git restore .
       - run: python -m coverage run --branch --source=markovq -m pytest -q
       - run: python -m coverage json && python scripts/coverage_gate.py
       - run: python -m benchmarks.foundations
       - run: python -Werror -m benchmarks.quantum > /tmp/mq-benchmark.json
-      - run: gzip -c /tmp/mq-benchmark.json | base64 -w0 | sed 's/^/REFERENCE_RUN=/'
+      - uses: actions/upload-artifact@v4
+        with:
+          name: quantum-benchmark-python-${{ matrix.python }}
+          path: /tmp/mq-benchmark.json
       - run: python -m ruff check .
       - run: python -m ruff format --check .
       - run: python -m mypy --ignore-missing-imports markovq

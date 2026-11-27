@@ -23,7 +23,7 @@ def projector(a: ArrayLike, n: int) -> np.ndarray:
     if (
         p.shape != (n, n)
         or not np.allclose(p, adj(p), rtol=0, atol=TOL)
-        or not np.allclose(np.einsum('ij,jk->ik', p, p), p, rtol=0, atol=TOL)
+        or not np.allclose(np.einsum("ij,jk->ik", p, p), p, rtol=0, atol=TOL)
     ):
         raise ValueError("invalid orthogonal projector")
     return p
@@ -50,8 +50,8 @@ def first_detection(
     first = np.zeros(count(steps) + 1)
     survival = np.ones_like(first)
     for t in range(1, len(first)):
-        propagated = np.einsum('ij,j->i', u, v)
-        hit = np.einsum('ij,j->i', p, propagated)
+        propagated = np.einsum("ij,j->i", u, v)
+        hit = np.einsum("ij,j->i", p, propagated)
         v = propagated - hit
         first[t] = np.vdot(hit, hit).real
         survival[t] = np.vdot(v, v).real
@@ -117,7 +117,7 @@ def recurrence(step: ArrayLike, initial: ArrayLike, steps: int) -> Recurrence:
     amp = np.ones(count(steps) + 1, complex)
     first = np.zeros_like(amp)
     for t in range(1, len(amp)):
-        current = np.einsum('ij,j->i', u, current)
+        current = np.einsum("ij,j->i", u, current)
         amp[t] = np.vdot(v, current)
         first[t] = amp[t] - first[1:t] @ amp[t - 1 : 0 : -1]
     return Recurrence(

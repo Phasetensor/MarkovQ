@@ -42,6 +42,12 @@ Public imports use `from markovq import quantum as q`. These finite-state models
 
 `q.stochastic_walk(H, rates, ω)` interpolates between coherent motion and independent directed jumps through (1−ω)H and operators √(ωrᵢⱼ)|j〉〈i|. Rates use source rows and destination columns. Diagonal rates model local dephasing. The full local-jump limit reproduces classical two-state populations. The dense generator costs O(d⁴) storage and a dense exponential can cost O(d⁶) arithmetic. References include the analytical excited-state decay exp(−t), a driven complex-Hamiltonian QuTiP calculation and consistency of two numerical solvers. The implementation covers finite-dimensional, time-independent Markovian open dynamics.
 
+## Numerical results
+
+![Spreading, cumulative detection, and search](quantum-benchmarks.svg)
+
+The figure reads the committed numerical record. Recreate it with Matplotlib installed using `python -m benchmarks.quantum_figure`.
+
 ## Verification and references
 
 Run the full reference suite with `python -m pip install '.[references]' pytest` and `python -m pytest`. Reproduce the statistical and numerical benchmark with `python -m benchmarks.quantum`. The tests are in tests/test_quantum.py and tests/test_quantum_references.py. The stored numerical results identify NumPy, SciPy and Python versions, the Monte Carlo seed, a standard error, graph sizes, candidate times and timing measurements.
