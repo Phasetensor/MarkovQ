@@ -1,6 +1,4 @@
-# MarkovQ
-
-<p align="center"><img src="docs/assets/markovq-logo.png" width="780" alt="MarkovQ"></p>
+<h1 align="center"><img src="docs/assets/markovq-logo.png" width="520" alt="MarkovQ — Classical &amp; Quantum Markov Dynamics"></h1>
 
 PhaseTensor’s scientific Python framework for classical and quantum stochastic dynamics. MarkovQ implements modules 01–25, from classical Markov processes and spectral graph operators to quantum walks, monitored detection, graph search, Lindblad evolution, noise channels, network ranking, partitioned simulation, circuit integration and scientific reporting.
 
