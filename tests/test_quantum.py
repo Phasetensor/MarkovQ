@@ -154,30 +154,77 @@ def test_domain_errors(action):
 
 
 def test_position_dephasing():
-    coherent=q.quantum_mixing(H,V,6)
-    close(q.dephased_mixing(H,V,6,0),coherent.instantaneous,atol=1e-12)
-    close(q.dephased_mixing(H,V,6,1)[1:],np.full((5,2),.5),atol=1e-12)
-    close(q.dephased_mixing(H,V,3,1,[0,0]),np.ones((3,1)))
+    coherent = q.quantum_mixing(H, V, 6)
+    close(q.dephased_mixing(H, V, 6, 0), coherent.instantaneous, atol=1e-12)
+    close(q.dephased_mixing(H, V, 6, 1)[1:], np.full((5, 2), 0.5), atol=1e-12)
+    close(q.dephased_mixing(H, V, 3, 1, [0, 0]), np.ones((3, 1)))
     with pytest.raises(ValueError):
-        q.dephased_mixing(H,V,0,0)
+        q.dephased_mixing(H, V, 0, 0)
 
 
 def test_nearly_degenerate_mixing_and_initial_dependence():
     from markovq.quantum.measurement import phase_spaces
-    z=np.exp(1j*1e-5)
-    u=H@np.diag([1,z])@H
-    assert len(phase_spaces(u,1e-8))==2
-    short=q.quantum_mixing(u,V,5)
-    close(short.limiting_average,[.5,.5],atol=1e-10)
-    assert short.tv_to_limit>.49
-    close(q.quantum_mixing(np.eye(2),[0,1],2).limiting_average,[0,1])
+
+    z = np.exp(1j * 1e-5)
+    u = H @ np.diag([1, z]) @ H
+    assert len(phase_spaces(u, 1e-8)) == 2
+    short = q.quantum_mixing(u, V, 5)
+    close(short.limiting_average, [0.5, 0.5], atol=1e-10)
+    assert short.tv_to_limit > 0.49
+    close(q.quantum_mixing(np.eye(2), [0, 1], 2).limiting_average, [0, 1])
 
 
 def test_projective_detection_after_propagation():
     # Target is a coherent superposition. An unmonitored occupancy of 1/2
     # at every time does not imply repeated new detection events.
-    plus=np.ones(2)/np.sqrt(2)
-    result=q.first_detection(I,V,np.outer(plus,plus),4)
-    close(result.first,[0,.5,0,0,0],atol=1e-12)
-    event=q.eventual_detection(I,V,np.outer(plus,plus))
-    close([event.probability,event.conditional_mean],[.5,1])
+    plus = np.ones(2) / np.sqrt(2)
+    result = q.first_detection(I, V, np.outer(plus, plus), 4)
+    close(result.first, [0, 0.5, 0, 0, 0], atol=1e-12)
+    event = q.eventual_detection(I, V, np.outer(plus, plus))
+    close([event.probability, event.conditional_mean], [0.5, 1])
+
+
+def test_independent_trials_and_search_steps():
+    walk=q.graph_walk([[0,1,1],[1,0,1],[1,1,0]])
+    v=np.array([1,1j,2,1,-1,1j])/3
+    marked=walk.position==1
+    current=v.copy()
+    reference=[]
+    for _ in range(4):
+        reference.append(np.linalg.norm(current[marked])**2)
+        current[marked]*=-1
+        current=walk.operator@current
+    result=q.coined_search(walk,v,[1],range(4))
+    close(result.success,reference)
+    close(result.expected_cost(2)["marking_queries"],2/reference[2])
+    empty=q.discrete_search(I,V,[],[0])
+    assert np.isinf(empty.expected_cost(0)["final_measurements"])
+    assert empty.expected_cost(0)["marking_queries"]==0
+    analog=q.continuous_search(X,.3,V,[0],[.2])
+    close(analog.expected_cost(0)["analog_oracle_time"],.2/analog.success[0])
+
+
+def test_marked_szegedy_trajectory():
+    p=np.array([[.8,.2],[.3,.7]])
+    w=q.szegedy(p)
+    v=w.coherent([.6,.4])
+    expected=[]
+    for _ in range(4):
+        expected.append(np.linalg.norm(v[2:])**2)
+        v[2:]*=-1
+        v=w.reflection_b@(w.reflection_a@v)
+    close(q.szegedy_search(w,[.6,.4],[1],range(4)).success,expected)
+
+
+def test_finite_light_cone_return():
+    # Before the wavefront reaches the cycle boundary its position return
+    # probability agrees with a walk grown directly on the infinite line.
+    coin=np.array([1,1j])/np.sqrt(2)
+    walk=q.cycle_walk(13)
+    v=np.kron(coin,np.eye(13)[6])
+    r=q.recurrence(walk.operator,v,3)
+    for t in range(4):
+        _,p=q.line_distribution(t,coin)
+        pos,_=walk.marginals(walk.evolve(v,t))
+        close(pos[6],p[t])
+        assert r.occupancy[t]<=pos[6]+1e-12

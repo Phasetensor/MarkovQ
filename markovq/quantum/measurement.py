@@ -23,7 +23,7 @@ def projector(a: ArrayLike, n: int) -> np.ndarray:
     if (
         p.shape != (n, n)
         or not np.allclose(p, adj(p), rtol=0, atol=TOL)
-        or not np.allclose(p @ p, p, rtol=0, atol=TOL)
+        or not np.allclose(np.einsum('ij,jk->ik', p, p), p, rtol=0, atol=TOL)
     ):
         raise ValueError("invalid orthogonal projector")
     return p
@@ -50,8 +50,8 @@ def first_detection(
     first = np.zeros(count(steps) + 1)
     survival = np.ones_like(first)
     for t in range(1, len(first)):
-        propagated = u @ v
-        hit = p @ propagated
+        propagated = np.einsum('ij,j->i', u, v)
+        hit = np.einsum('ij,j->i', p, propagated)
         v = propagated - hit
         first[t] = np.vdot(hit, hit).real
         survival[t] = np.vdot(v, v).real
@@ -117,7 +117,7 @@ def recurrence(step: ArrayLike, initial: ArrayLike, steps: int) -> Recurrence:
     amp = np.ones(count(steps) + 1, complex)
     first = np.zeros_like(amp)
     for t in range(1, len(amp)):
-        current = u @ current
+        current = np.einsum('ij,j->i', u, current)
         amp[t] = np.vdot(v, current)
         first[t] = amp[t] - first[1:t] @ amp[t - 1 : 0 : -1]
     return Recurrence(
@@ -133,7 +133,10 @@ class Mixing(NamedTuple):
 
 
 def quantum_mixing(
-    step: ArrayLike, initial: ArrayLike, horizon: int, positions: Optional[ArrayLike] = None
+    step: ArrayLike,
+    initial: ArrayLike,
+    horizon: int,
+    positions: Optional[ArrayLike] = None,
 ) -> Mixing:
     u = unitary(step)
     v = ket(initial, len(u))
@@ -164,18 +167,30 @@ def quantum_mixing(
     return Mixing(np.array(history), avg, limit, float(abs(avg - limit).sum() / 2))
 
 
-def dephased_mixing(step: ArrayLike,initial: ArrayLike,horizon: int,strength: float,positions: Optional[ArrayLike]=None) -> np.ndarray:
+def dephased_mixing(
+    step: ArrayLike,
+    initial: ArrayLike,
+    horizon: int,
+    strength: float,
+    positions: Optional[ArrayLike] = None,
+) -> np.ndarray:
     """After each unitary step, dephase between distinct position eigenspaces."""
-    u=unitary(step)
-    v=ket(initial,len(u))
-    n=count(horizon)
-    labels=np.arange(len(u)) if positions is None else np.asarray(positions)
-    if not n or not 0<=strength<=1 or labels.shape!=(len(u),) or labels.dtype.kind not in "iu" or labels.min()<0:
+    u = unitary(step)
+    v = ket(initial, len(u))
+    n = count(horizon)
+    labels = np.arange(len(u)) if positions is None else np.asarray(positions)
+    if (
+        not n
+        or not 0 <= strength <= 1
+        or labels.shape != (len(u),)
+        or labels.dtype.kind not in "iu"
+        or labels.min() < 0
+    ):
         raise ValueError("invalid horizon, dephasing strength or position labels")
-    rho=np.outer(v,v.conj())
-    attenuation=np.where(labels[:,None]==labels[None,:],1.,1.-strength)
-    result=[]
+    rho = np.outer(v, v.conj())
+    attenuation = np.where(labels[:, None] == labels[None, :], 1.0, 1.0 - strength)
+    result = []
     for _ in range(n):
-        result.append(np.bincount(labels,weights=rho.diagonal().real))
-        rho=(u@rho@adj(u))*attenuation
+        result.append(np.bincount(labels, weights=rho.diagonal().real))
+        rho = (u @ rho @ adj(u)) * attenuation
     return np.asarray(result)

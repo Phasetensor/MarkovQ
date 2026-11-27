@@ -23,6 +23,20 @@ class SearchResult(NamedTuple):
     preparations_per_trial: int = 1
     measurements_per_trial: int = 1
 
+    def expected_cost(self, index: int) -> dict[str, float]:
+        """Repeat a fixed candidate independently until its marked outcome occurs."""
+        from ..chains import state
+
+        i = state(index, len(self.candidates))
+        p = float(self.success[i])
+        trials = 1 / p if p > 0 else np.inf
+        return {
+            "initial_preparations": trials,
+            "final_measurements": trials,
+            "marking_queries": trials * self.discrete_queries[i] if self.discrete_queries[i] else 0.0,
+            "analog_oracle_time": trials * self.oracle_time[i] if self.oracle_time[i] else 0.0,
+        }
+
 
 def discrete_search(
     step: ArrayLike, initial: ArrayLike, marked: Iterable[int], steps: Iterable[int]
