@@ -1,3 +1,3 @@
-include CITATION.cff CHANGELOG.md ROADMAP.md
+include CITATION.cff CHANGELOG.md
 recursive-include docs *.md *.json *.svg
 recursive-include benchmarks *.py *.csv *.md

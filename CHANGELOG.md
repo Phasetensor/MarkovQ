@@ -1,5 +1,9 @@
 # Changes
 
+## 0.1.0
+
+Initial public release of the 25 scientific modules. See [release notes](docs/release-notes.md).
+
 ## Unreleased
 
 Classical probability and spectral graph foundations, roadmap modules 01–12.
