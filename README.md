@@ -1,8 +1,14 @@
 # MarkovQ
 
-PhaseTensor's scientific Python library for classical and quantum stochastic dynamics. The classical-spectral-foundations branch implements roadmap modules 01–12. The quantum modules are planned.
+PhaseTensor’s scientific Python framework for classical and quantum stochastic dynamics. The [master roadmap](ROADMAP.md) defines 25 modules. The [development branch](https://github.com/Phasetensor/MarkovQ/tree/classical-spectral-foundations) implements the first twelve, spanning finite-state Markov models, first passage, selected Lévy processes and spectral graph operators.
 
-Install this checkout with `python -m pip install .`. Run the scientific tests with `python -m pytest` and reproduce the statistical benchmark with `python -m benchmarks.foundations`.
+## Try the development version
+
+```sh
+git clone --branch classical-spectral-foundations https://github.com/Phasetensor/MarkovQ.git
+cd MarkovQ
+python -m pip install .
+```
 
 ```python
 from markovq import absorption, line_walk
@@ -12,6 +18,6 @@ result = absorption(walk.P)
 print(dict(zip(result.transient, result.mean)))  # state 4: 16 steps
 ```
 
-[Scientific specifications and traceability](docs/foundations.md) · [Measured benchmark results](docs/benchmark-results.json) · [Master roadmap](ROADMAP.md)
+Install pytest to run `python -m pytest`. Reproduce the statistical benchmarks with `python -m benchmarks.foundations`.
 
-Development version 0.1.0.dev0. Apache License 2.0.
+[Scientific specifications and traceability](https://github.com/Phasetensor/MarkovQ/blob/classical-spectral-foundations/docs/foundations.md) · [Measured benchmark results](https://github.com/Phasetensor/MarkovQ/blob/classical-spectral-foundations/docs/benchmark-results.json) · [License](LICENSE)
