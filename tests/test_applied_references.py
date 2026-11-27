@@ -78,3 +78,26 @@ def test_channel_against_qutip_master_equation():
         ref = (duration * qt.liouvillian(0 * qt.sigmaz(), [collapse])).expm()
         expected = qt.vector_to_operator(ref * qt.operator_to_vector(rho)).full()
         assert_allclose(apply_channel(rho.full(), kraus_model(name, p)), expected)
+
+
+@pytest.mark.parametrize("level",[0,2])
+def test_layout_resources(level):
+    from qiskit import QuantumCircuit, transpile
+    from qiskit.circuit import AncillaRegister, QuantumRegister
+    from qiskit.transpiler import CouplingMap
+
+    q=QuantumRegister(3)
+    a=AncillaRegister(1)
+    c=QuantumCircuit(q,a)
+    c.cx(q[0],q[1])
+    c.x(a[0])
+    line=CouplingMap.from_line(5)
+    compiled=transpile(c,coupling_map=line,initial_layout=[0,4,2,3],basis_gates=["u","cx"],routing_method="basic",optimization_level=level)
+    r=circuits.circuit_resources(c,compiled)
+    active={compiled.find_bit(bit).index for op in compiled.data for bit in op.qubits}
+    assert r["logical_qubits"]==r["represented_logical_qubits"]==3
+    assert r["ancillary_qubits"]==len(active-{0,4,2})
+    assert r["compiled_width"]==5
+    ident=QuantumCircuit(2)
+    r=circuits.circuit_resources(ident,ident)
+    assert r["physical_qubits_addressed"]==r["ancillary_qubits"]==0

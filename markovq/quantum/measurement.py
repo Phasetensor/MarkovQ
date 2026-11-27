@@ -96,6 +96,9 @@ class DetectionDiagnostics(NamedTuple):
     relative_residual: float
     hermiticity_error: float
     minimum_eigenvalue: float
+    unconditional_status: str
+    dark_amplitude: float
+    dark_amplitude_error: float
 
 
 class EventualDetection(NamedTuple):
@@ -214,9 +217,31 @@ def eventual_detection(
     if ambiguous:
         prob = mean = np.nan
         mean_status = "unresolved"
-    unconditional = (
-        np.nan if ambiguous else (np.inf if np.linalg.norm(dark @ v) > floor else mean)
+    # Coordinate states outside backward reachability form an exact invariant
+    # dark block for the represented input. Its mass need never be squared.
+    reachable = np.any(p != 0, axis=0)
+    while True:
+        previous = reachable
+        reachable = previous | np.any(u[previous] != 0, axis=0)
+        if np.array_equal(previous, reachable):
+            break
+    dark_amp = float(linalg.norm(dark @ v))
+    variation = max(
+        float(linalg.norm((dark - (np.eye(len(u)) - a @ adj(a))) @ v))
+        for a in alternatives
     )
+    error = variation + inv + coupling + floor * (
+        1 + float(linalg.norm(abs(dark) @ abs(v)))
+    )
+    unconditional = np.nan
+    unconditional_status = "unresolved"
+    if np.any(v[~reachable] != 0):
+        unconditional, unconditional_status = np.inf, "infinite"
+    elif not ambiguous:
+        if bright.shape[1] == int(reachable.sum()):
+            unconditional, unconditional_status = mean, mean_status
+        elif dark_amp > error:
+            unconditional, unconditional_status = np.inf, "infinite"
     diag = DetectionDiagnostics(
         status,
         mean_status,
@@ -231,6 +256,9 @@ def eventual_detection(
         residual,
         hermiticity,
         minimum,
+        unconditional_status,
+        dark_amp,
+        error,
     )
     return EventualDetection(prob, mean, dark, diag)
 

@@ -53,6 +53,31 @@ def graph_circuit(operator: ArrayLike):
     return circuit
 
 
+def circuit_resources(original, compiled, backend=None) -> dict:
+    """Use initial placement to distinguish input-data wires from workspace."""
+    operations = [op for op in compiled.data if not getattr(op.operation, "_directive", False)]
+    used = {compiled.find_bit(q).index for op in operations for q in op.qubits}
+    data = [i for i,q in enumerate(original.qubits) if q not in original.ancillas]
+    mapping = None
+    if compiled.layout is not None:
+        mapping = compiled.layout.initial_index_layout(filter_ancillas=True)
+    elif compiled.qubits == original.qubits:
+        mapping = list(range(original.num_qubits))
+    placed = None if mapping is None or len(mapping) != original.num_qubits else {mapping[i] for i in data}
+    return {
+        "logical_qubits": len(data),
+        "represented_logical_qubits": None if placed is None else len(placed),
+        "physical_qubits_addressed": len(used),
+        "addressed_wire_indices": sorted(used),
+        "ancillary_qubits": None if placed is None else len(used - placed),
+        "compiled_width": compiled.num_qubits,
+        "backend_capacity": getattr(backend, "num_qubits", None),
+        "measurement_count": sum(op.operation.name == "measure" for op in operations),
+        "depth": compiled.depth(),
+        "two_qubit_gates": sum(len(op.qubits) == 2 for op in operations),
+    }
+
+
 def simulate(
     circuit,
     initial: ArrayLike,
@@ -85,13 +110,9 @@ def simulate(
     return {
         "probabilities": probabilities,
         "counts": counts,
-        "logical_qubits": n,
-        "ancillary_qubits": len({q for op in compiled.data for q in op.qubits}) - n,
-        "depth": compiled.depth(),
-        "two_qubit_gates": sum(
-            len(inst.qubits) == 2 and inst.operation.name != "barrier"
-            for inst in compiled.data
-        ),
+        **circuit_resources(circuit, compiled, backend),
+        "requested_shots": shots,
+        "returned_shots": int(counts.sum()),
         "shots": shots,
         "provider_jobs": 0,
         "runtime_s": perf_counter() - started,
@@ -127,12 +148,9 @@ def execute_backend(circuit, initial: ArrayLike, backend, *, shots: int, seed: i
         "counts": dict(counts),
         "shots": shots,
         "provider_jobs": 1,
-        "logical_qubits": n,
-        "ancillary_qubits": len({q for op in compiled.data for q in op.qubits}) - n,
-        "depth": compiled.depth(),
-        "two_qubit_gates": sum(
-            len(op.qubits) == 2 and op.operation.name != "barrier"
-            for op in compiled.data
-        ),
+        **circuit_resources(circuit, compiled, backend),
+        "requested_shots": shots,
+        "returned_shots": sum(counts.values()),
+        "evidence": "caller-selected backend execution",
         "runtime_s": perf_counter() - started,
     }

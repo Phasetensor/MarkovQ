@@ -34,12 +34,7 @@ class SearchResult(NamedTuple):
             raise ValueError("invalid probability")
         if self.log_success is not None:
             logged = float(self.log_success[i])
-            if (
-                np.isnan(logged)
-                or logged > 16 * np.finfo(float).eps
-                or (p == 0 and np.exp(logged) > 0)
-            ):
-                raise ValueError("invalid log probability")
+            _validate_pair(p, logged)
         if p == 0:
             return (
                 "probability-underflow"
@@ -97,6 +92,18 @@ class SearchResult(NamedTuple):
         return result
 
 
+def _validate_pair(p: float, logged: float) -> None:
+    eps = np.finfo(float).eps
+    if np.isnan(logged) or logged > 16 * eps:
+        raise ValueError("invalid log probability")
+    represented = float(np.exp(logged))
+    if p != represented and (
+        min(p, represented) < np.finfo(float).tiny
+        or abs(p - represented) > 16 * eps * max(1, abs(logged)) * p
+    ):
+        raise ValueError("inconsistent log probability")
+
+
 def _probabilities(amplitudes):
     from scipy.special import logsumexp
 
@@ -105,7 +112,10 @@ def _probabilities(amplitudes):
         magnitudes = abs(v)
         nonzero = magnitudes[magnitudes > 0]
         logs.append(logsumexp(2 * np.log(nonzero)) if nonzero.size else -np.inf)
-    return np.exp(logs), np.array(logs)
+    probabilities = np.exp(logs)
+    for p, logged in zip(probabilities, logs):
+        _validate_pair(p, logged)
+    return probabilities, np.array(logs)
 
 
 def discrete_search(
@@ -125,7 +135,7 @@ def discrete_search(
     return SearchResult(
         times,
         success,
-        int(success.argmax()),
+        int(logs.argmax()),
         times.copy(),
         np.zeros(len(times)),
         log_success=logs,
@@ -180,7 +190,7 @@ def continuous_search(
         p @ continuous_walk(h, initial, x, "spectral") for x in t
     )
     return SearchResult(
-        t, prob, int(prob.argmax()), np.zeros(len(t), int), t.copy(), log_success=logs
+        t, prob, int(logs.argmax()), np.zeros(len(t), int), t.copy(), log_success=logs
     )
 
 

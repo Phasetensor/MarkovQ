@@ -13,6 +13,18 @@ from .circuits import cycle_circuit, simulate
 from .noise import readout
 
 
+def estimator_report(value: float, standard_error) -> dict:
+    if not np.isfinite(value):
+        raise ValueError("nonfinite corrected estimator")
+    return {
+        "unconstrained_estimate": value,
+        "physical_domain": [0, 1],
+        "domain_status": "inside" if 0 <= value <= 1 else "outside",
+        "sampling_standard_error": standard_error,
+        "calibration_uncertainty_propagated": False,
+    }
+
+
 def phase_experiment(
     records, at, *, seed: int, budget: int = 10000, steps: int = 3
 ) -> dict:
@@ -113,7 +125,9 @@ def phase_experiment(
         "pilot_shots": list(estimate.pilot_shots),
         "final_shots": list(estimate.final_shots),
         "final_successes": list(estimate.successes),
-        "corrected_average_bit_probability": estimate.value,
+        "corrected_average_bit_estimator": estimator_report(estimate.value, estimate.standard_error),
+        "observed_empirical_average_bit_probability": float(np.mean(np.array(estimate.successes) / estimate.final_shots)),
+        "ideal_average_bit_probability": float(np.mean(ideal_ones)),
         "total_simulated_shots": estimate.total_shots
         + sum(estimate.final_shots)
         + 2 * budget,

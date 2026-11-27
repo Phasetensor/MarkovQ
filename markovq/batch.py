@@ -52,7 +52,7 @@ def endpoint_plan(
     seed: int,
     batch_size: int = 2048,
 ) -> EndpointPlan:
-    p = sparse.csr_matrix(validate_transition_matrix(transition))
+    p = sparse.csr_matrix(validate_transition_matrix(transition), copy=True)
     p.sum_duplicates()
     p.eliminate_zeros()
     p.sort_indices()
@@ -61,6 +61,13 @@ def endpoint_plan(
     steps, seed = count(steps), count(seed)
     if not min(n, b):
         raise ValueError("positive trajectory and batch counts required")
+    fingerprint = _fingerprint(p, law, steps, n, seed, b)
+    for array in (p.data, p.indices, p.indptr, law):
+        array.flags.writeable = False
+    return EndpointPlan(p, law, steps, n, seed, b, fingerprint)
+
+
+def _fingerprint(p, law, steps, n, seed, b):
     digest = hashlib.sha256()
     digest.update(str((p.shape, steps, n, seed, b)).encode("ascii"))
     for a, dtype in [
@@ -71,11 +78,25 @@ def endpoint_plan(
     ]:
         digest.update(struct.pack("<Q", len(a)))
         digest.update(a.astype(dtype, copy=False).tobytes())
-        a.flags.writeable = False
-    return EndpointPlan(p, law, steps, n, seed, b, digest.hexdigest())
+    return digest.hexdigest()
+
+
+def _verify(plan):
+    p = plan.transition
+    if (
+        p.format != "csr"
+        or p.data.dtype != np.float64
+        or plan.initial.dtype != np.float64
+        or any(a.dtype.kind != "i" for a in (p.indptr, p.indices))
+        or any(a.ndim != 1 for a in (p.data, p.indices, p.indptr, plan.initial))
+        or _fingerprint(p, plan.initial, plan.steps, plan.trajectories, plan.seed, plan.batch_size)
+        != plan.fingerprint
+    ):
+        raise ValueError("inconsistent endpoint plan")
 
 
 def run_partition(plan: EndpointPlan, index: int) -> Partition:
+    _verify(plan)
     i = count(index)
     if i >= plan.batches:
         raise ValueError("partition outside plan")
@@ -95,6 +116,7 @@ def run_partition(plan: EndpointPlan, index: int) -> Partition:
 
 
 def merge_partitions(plan: EndpointPlan, parts: Iterable[Partition]) -> BatchResult:
+    _verify(plan)
     total = np.zeros(plan.transition.shape[0], np.int64)
     seen = set()
     for part in parts:
