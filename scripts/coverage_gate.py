@@ -1,4 +1,5 @@
 """Independently enforce the two coverage thresholds."""
+
 import json
 from pathlib import Path
 
