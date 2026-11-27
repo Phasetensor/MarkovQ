@@ -41,3 +41,7 @@ The original Python 3.9 reference job emitted Qiskit's Python-version deprecatio
 Required CI runs the full suite, independently enforces 95% statement and 90% branch coverage, checks Ruff lint and formatting, checks Mypy, builds the wheel and sdist, validates both with strict Twine, and installs and imports the wheel in an isolated environment outside the checkout. Final job counts and coverage are identified against the exact commit in the accompanying acceptance message. Baseline coverage was 99.80% / 99.21%. The additional defensive exits and platform-dependent numerical paths introduce branches that do not all run on one OS. No coverage exclusions were added.
 
 [Precision, failure semantics and API compatibility](numerical-stability.md) · [Measured performance](scalability-benchmarks.md) · [Benchmark data and tolerance sweep](quantum-benchmarks.json)
+
+### Test receipt
+
+The scientific suite executed 200 tests (194 core and 6 independent Qiskit/QuTiP reference cases). The Python 3.12 coverage run measured 99.50% statement coverage and 98.74% branch coverage. These values exceed the separate thresholds and differ from the original baseline by −0.30 and −0.47 percentage points respectively. No test or source path was excluded to achieve these values. Browser-independent immutable links to the final head and its successful workflows are supplied with the acceptance report; the [branch-filtered runs](https://github.com/Phasetensor/MarkovQ/actions?query=branch%3Aclassical-spectral-foundations) expose subsequent history.

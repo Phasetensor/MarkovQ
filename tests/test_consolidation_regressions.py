@@ -35,7 +35,9 @@ def test_stiff_decay_across_timescales(method):
 
 def test_matrix_form_avoids_kronecker_products(monkeypatch):
     def unexpected(*args, **kwargs):
-        raise AssertionError("a matrix-form calculation constructed a Kronecker product")
+        raise AssertionError(
+            "a matrix-form calculation constructed a Kronecker product"
+        )
 
     monkeypatch.setattr(np, "kron", unexpected)
     monkeypatch.setattr(sparse, "kron", unexpected)
