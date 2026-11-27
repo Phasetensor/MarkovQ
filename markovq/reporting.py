@@ -20,11 +20,26 @@ from .quantum.measurement import EventualDetection
 
 def scientific_value(value, status: str, reason: str) -> dict:
     """Attach the scientific origin of a nonfinite or missing observation."""
-    if status not in {"infinite", "undefined", "unresolved", "overflow", "missing", "unexpected"} or not reason:
+    if (
+        status
+        not in {
+            "infinite",
+            "undefined",
+            "unresolved",
+            "overflow",
+            "missing",
+            "unexpected",
+        }
+        or not reason
+    ):
         raise ValueError("invalid scientific status")
     if value is not None and np.isfinite(value):
         raise ValueError("expected a nonfinite value")
-    sign = None if value is None or np.isnan(value) else ("positive" if value > 0 else "negative")
+    sign = (
+        None
+        if value is None or np.isnan(value)
+        else ("positive" if value > 0 else "negative")
+    )
     return {"value": None, "status": status, "reason": reason, "sign": sign}
 
 
@@ -32,17 +47,59 @@ def _quantity(value, status, reason):
     return value if np.isfinite(value) else scientific_value(value, status, reason)
 
 
+def search_cost_record(result, index: int) -> dict:
+    """Encode expected resources with their model-specific overflow diagnostics."""
+    statuses = result.resource_status(index)
+    costs = result.expected_cost(index)
+    return {
+        key: _quantity(costs[key], "overflow" if status == "finite-overflow" else "infinite", status)
+        if key in costs else scientific_value(None, "missing", status)
+        for key, status in statuses.items()
+    }
+
+
 def _encode(value):
     if isinstance(value, EventualDetection):
         d = value.diagnostics
         fields = value._asdict()
         fields["probability"] = _quantity(value.probability, "unresolved", d.status)
-        fields["conditional_mean"] = _quantity(value.conditional_mean, d.mean_status, "conditional detection time")
-        fields["diagnostics"] = dict(d._asdict(), unconditional_mean=_quantity(d.unconditional_mean, d.unconditional_status, "unconditional detection time"))
+        fields["conditional_mean"] = _quantity(
+            value.conditional_mean, d.mean_status, "conditional detection time"
+        )
+        fields["diagnostics"] = dict(
+            d._asdict(),
+            unconditional_mean=_quantity(
+                d.unconditional_mean,
+                d.unconditional_status,
+                "unconditional detection time",
+            ),
+        )
+        for name in ("spectral_radius", "condition_bound", "relative_residual", "hermiticity_error", "minimum_eigenvalue"):
+            if np.isnan(fields["diagnostics"][name]):
+                fields["diagnostics"][name] = scientific_value(None, "missing", "solver diagnostic unavailable")
         return _encode(fields)
     if isinstance(value, Passage):
-        return _encode(dict(value._asdict(), mean=[_quantity(x, "infinite" if np.isinf(x) else "unexpected", "unconditional hitting time") for x in value.mean],
-                            conditional_mean=[_quantity(x, "undefined" if p == 0 else "unexpected", "conditional hitting time") for x,p in zip(value.conditional_mean,value.probability)]))
+        return _encode(
+            dict(
+                value._asdict(),
+                mean=[
+                    _quantity(
+                        x,
+                        "infinite" if np.isinf(x) else "unexpected",
+                        "unconditional hitting time",
+                    )
+                    for x in value.mean
+                ],
+                conditional_mean=[
+                    _quantity(
+                        x,
+                        "undefined" if p == 0 else "unexpected",
+                        "conditional hitting time",
+                    )
+                    for x, p in zip(value.conditional_mean, value.probability)
+                ],
+            )
+        )
     if hasattr(value, "_asdict"):
         return _encode(value._asdict())
     if isinstance(value, Mapping):
@@ -52,11 +109,16 @@ def _encode(value):
     if isinstance(value, (tuple, list)):
         return [_encode(v) for v in value]
     if isinstance(value, np.generic):
-        return _encode(value.item())
+        scalar = value.item()
+        if isinstance(scalar, np.generic):
+            return {"dtype": str(value.dtype), "decimal": str(value)}
+        return _encode(scalar)
     if isinstance(value, complex):
         return {"real": _encode(value.real), "imag": _encode(value.imag)}
     if isinstance(value, float) and not math.isfinite(value):
-        return scientific_value(value, "unexpected", "nonfinite value without a diagnostic")
+        return scientific_value(
+            value, "unexpected", "nonfinite value without a diagnostic"
+        )
     return value
 
 

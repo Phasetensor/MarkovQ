@@ -209,10 +209,10 @@
       "max_standard_error": 0.003468832512532134,
       "max_probability_error": 0.002818378773331645,
       "sparse_bytes": 620,
-      "median_seconds": 0.004375875000000029,
-      "min_seconds": 0.004366458999999878,
-      "max_seconds": 0.005383917000000071,
-      "paths_per_second": 2285257.234267417,
+      "median_seconds": 0.004479249999999935,
+      "min_seconds": 0.004459125000000119,
+      "max_seconds": 0.004814874999999885,
+      "paths_per_second": 2232516.604342277,
       "parallel_efficiency": 1.0
     },
     {
@@ -242,11 +242,11 @@
       "max_standard_error": 0.003468832512532134,
       "max_probability_error": 0.002818378773331645,
       "sparse_bytes": 620,
-      "median_seconds": 1.0715028750000002,
-      "min_seconds": 1.067780209,
-      "max_seconds": 1.0838771669999998,
-      "paths_per_second": 9332.686111551495,
-      "parallel_efficiency": 0.0020419333919192836
+      "median_seconds": 1.037859417,
+      "min_seconds": 1.0377563330000004,
+      "max_seconds": 1.0501408749999999,
+      "paths_per_second": 9635.216327183936,
+      "parallel_efficiency": 0.0021579271366769007
     },
     {
       "states": 64,
@@ -323,10 +323,10 @@
       "max_standard_error": 0.00351089732119867,
       "max_probability_error": 0.004050065908581008,
       "sparse_bytes": 2540,
-      "median_seconds": 0.004685417000000136,
-      "min_seconds": 0.00451791700000026,
-      "max_seconds": 0.004686167000000019,
-      "paths_per_second": 2134281.751229338,
+      "median_seconds": 0.004564124999999919,
+      "min_seconds": 0.004484957999999928,
+      "max_seconds": 0.004761708000000198,
+      "paths_per_second": 2191000.465587638,
       "parallel_efficiency": 1.0
     },
     {
@@ -404,11 +404,11 @@
       "max_standard_error": 0.00351089732119867,
       "max_probability_error": 0.004050065908581008,
       "sparse_bytes": 2540,
-      "median_seconds": 1.0505647919999994,
-      "min_seconds": 1.0471612500000003,
-      "max_seconds": 1.052315417,
-      "paths_per_second": 9518.689447951732,
-      "parallel_efficiency": 0.0022299514678577478
+      "median_seconds": 1.047067792,
+      "min_seconds": 1.043965375,
+      "max_seconds": 1.0595803339999996,
+      "paths_per_second": 9550.479994135852,
+      "parallel_efficiency": 0.0021794792251617263
     },
     {
       "states": 256,
@@ -677,10 +677,10 @@
       "max_standard_error": 0.00351089732119867,
       "max_probability_error": 0.004050065908581008,
       "sparse_bytes": 10220,
-      "median_seconds": 0.0047563330000004456,
-      "min_seconds": 0.004661500000000096,
-      "max_seconds": 0.0048144580000002435,
-      "paths_per_second": 2102460.025401725,
+      "median_seconds": 0.004903624999999856,
+      "min_seconds": 0.004802624999999949,
+      "max_seconds": 0.004955415999999602,
+      "paths_per_second": 2039307.65505117,
       "parallel_efficiency": 1.0
     },
     {
@@ -950,11 +950,11 @@
       "max_standard_error": 0.00351089732119867,
       "max_probability_error": 0.004050065908581008,
       "sparse_bytes": 10220,
-      "median_seconds": 1.047346749999999,
-      "min_seconds": 1.0453751660000004,
-      "max_seconds": 1.0587578329999996,
-      "paths_per_second": 9547.936249384466,
-      "parallel_efficiency": 0.002270658213242391
+      "median_seconds": 1.053846,
+      "min_seconds": 1.0426439589999994,
+      "max_seconds": 1.0646064170000002,
+      "paths_per_second": 9489.052480153647,
+      "parallel_efficiency": 0.0023265377483996028
     }
   ],
   "platform": "macOS-26.3.1-arm64-arm-64bit"

@@ -9,7 +9,7 @@
   },
   "limitations": "Finite fair game.",
   "model": "Gambler's ruin",
-  "peak_rss_bytes": 107266048,
+  "peak_rss_bytes": 108265472,
   "protocol": "first boundary entry",
   "results": {
     "exact_mean": [
@@ -31,8 +31,8 @@
       7.0
     ]
   },
-  "runtime_s": 0.0024392920000000373,
-  "schema": 1,
+  "runtime_s": 0.0018163339999999195,
+  "schema": 2,
   "seed": 0,
   "solver": "linear solve",
   "tolerance": 1e-10,

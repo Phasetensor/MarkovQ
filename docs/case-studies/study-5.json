@@ -9,7 +9,7 @@
   },
   "limitations": "Single plant protein, structurally correlated annotation, fixed graph, no independent biological discovery.",
   "model": "Biological network ranking",
-  "peak_rss_bytes": 110329856,
+  "peak_rss_bytes": 111067136,
   "protocol": "held-out helix 2, negatives from residues >=22",
   "results": {
     "community_labels": [
@@ -136,7 +136,7 @@
           }
         },
         "rng_seed": 501,
-        "runtime_s": 0.006400458000000109,
+        "runtime_s": 0.006035666999999911,
         "seed_residues": [
           12,
           15,
@@ -178,7 +178,7 @@
           }
         },
         "rng_seed": 502,
-        "runtime_s": 0.0032943750000000716,
+        "runtime_s": 0.0032112079999999654,
         "seed_residues": [
           8,
           9,
@@ -220,7 +220,7 @@
           }
         },
         "rng_seed": 503,
-        "runtime_s": 0.0032455000000000123,
+        "runtime_s": 0.0033552079999998874,
         "seed_residues": [
           9,
           10,
@@ -262,7 +262,7 @@
           }
         },
         "rng_seed": 504,
-        "runtime_s": 0.003266417000000077,
+        "runtime_s": 0.003038582999999928,
         "seed_residues": [
           7,
           15,
@@ -304,7 +304,7 @@
           }
         },
         "rng_seed": 505,
-        "runtime_s": 0.0032597909999998453,
+        "runtime_s": 0.0030522499999998676,
         "seed_residues": [
           10,
           15,
@@ -314,8 +314,8 @@
       }
     ]
   },
-  "runtime_s": 0.04443137500000005,
-  "schema": 1,
+  "runtime_s": 0.03850020899999995,
+  "schema": 2,
   "seed": 501,
   "solver": "restart, diffusion, CTQW",
   "tolerance": 1e-10,

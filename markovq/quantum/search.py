@@ -110,6 +110,8 @@ def _probabilities(amplitudes):
     logs = []
     for v in amplitudes:
         magnitudes = abs(v)
+        if not np.isfinite(magnitudes).all():
+            raise ValueError("invalid target amplitude")
         nonzero = magnitudes[magnitudes > 0]
         logs.append(logsumexp(2 * np.log(nonzero)) if nonzero.size else -np.inf)
     probabilities = np.exp(logs)

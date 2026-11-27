@@ -27,3 +27,5 @@ Install the independent reference solvers with `python -m pip install '.[referen
 [Numerical consolidation review](docs/consolidation-review.md) · [Precision and solver guidance](docs/numerical-stability.md) · [Scaling measurements](docs/scalability-benchmarks.md)
 
 [Applied modules, case studies and benchmark index](docs/applied.md)
+
+The 25 areas cover chains, classical walks, classification, recurrence, absorption, first passage, stationarity, mixing, continuous-time chains, Lévy models, graph Hamiltonians, spectral analysis, discrete and continuous quantum walks, Szegedy walks, monitored detection, quantum recurrence, quantum mixing, search, open dynamics, noise channels, biological networks, partitioned simulation, circuit adapters and scientific reporting. Hardware-adapter evidence uses simulators. [Final remediation](docs/final-remediation.md) · [Proposed release notes](docs/release-notes.md).

@@ -125,8 +125,12 @@ def phase_experiment(
         "pilot_shots": list(estimate.pilot_shots),
         "final_shots": list(estimate.final_shots),
         "final_successes": list(estimate.successes),
-        "corrected_average_bit_estimator": estimator_report(estimate.value, estimate.standard_error),
-        "observed_empirical_average_bit_probability": float(np.mean(np.array(estimate.successes) / estimate.final_shots)),
+        "corrected_average_bit_estimator": estimator_report(
+            estimate.value, estimate.standard_error
+        ),
+        "observed_empirical_average_bit_probability": float(
+            np.mean(np.array(estimate.successes) / estimate.final_shots)
+        ),
         "ideal_average_bit_probability": float(np.mean(ideal_ones)),
         "total_simulated_shots": estimate.total_shots
         + sum(estimate.final_shots)

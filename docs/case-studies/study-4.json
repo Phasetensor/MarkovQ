@@ -9,7 +9,7 @@
   },
   "limitations": "Finite protocol; monitored return uses initial-state projector.",
   "model": "Monitored recurrence and detection",
-  "peak_rss_bytes": 108740608,
+  "peak_rss_bytes": 109707264,
   "protocol": "evolve then project",
   "results": {
     "eventual": 0.4999999999999998,
@@ -60,8 +60,8 @@
       0.5001220703124999
     ]
   },
-  "runtime_s": 0.009109500000000104,
-  "schema": 1,
+  "runtime_s": 0.008142915999999945,
+  "schema": 2,
   "seed": 0,
   "solver": "conditional evolution",
   "tolerance": 1e-10,

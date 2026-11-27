@@ -48,7 +48,7 @@ jobs:
       - run: python -m ruff check .
       - run: python -m ruff format --check --diff .
       - run: python -m mypy --ignore-missing-imports markovq
-      - run: python -m build && python -m twine check --strict dist/*
+      - run: python -m build && python -m twine check --strict dist/* && python scripts/check_dist.py
       - run: |
           python -m venv /tmp/markovq-install
           /tmp/markovq-install/bin/pip install dist/*.whl

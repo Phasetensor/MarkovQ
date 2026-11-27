@@ -9,7 +9,7 @@
   },
   "limitations": "Specific initial coin and unbiased steps.",
   "model": "Line spreading",
-  "peak_rss_bytes": 107085824,
+  "peak_rss_bytes": 108003328,
   "protocol": "terminal position",
   "results": {
     "rows": [
@@ -40,8 +40,8 @@
       }
     ]
   },
-  "runtime_s": 0.0015547080000000157,
-  "schema": 1,
+  "runtime_s": 0.0013825000000000642,
+  "schema": 2,
   "seed": 0,
   "solver": "coined shift",
   "tolerance": 1e-10,

@@ -89,7 +89,9 @@ def _verify(plan):
         or plan.initial.dtype != np.float64
         or any(a.dtype.kind != "i" for a in (p.indptr, p.indices))
         or any(a.ndim != 1 for a in (p.data, p.indices, p.indptr, plan.initial))
-        or _fingerprint(p, plan.initial, plan.steps, plan.trajectories, plan.seed, plan.batch_size)
+        or _fingerprint(
+            p, plan.initial, plan.steps, plan.trajectories, plan.seed, plan.batch_size
+        )
         != plan.fingerprint
     ):
         raise ValueError("inconsistent endpoint plan")
@@ -134,6 +136,7 @@ def merge_partitions(plan: EndpointPlan, parts: Iterable[Partition]) -> BatchRes
             raise ValueError("invalid partition counts")
         seen.add(i)
         total += x.astype(np.int64)
+    _verify(plan)
     if len(seen) != plan.batches:
         raise ValueError("incomplete partitions")
     p = plan.transition

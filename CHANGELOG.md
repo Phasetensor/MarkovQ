@@ -11,3 +11,7 @@ Numerical consolidation of modules 01–20 adds tolerance diagnostics, condition
 ## Development branch — applied modules 21–25
 
 Added Kraus channels, biological network ranking, partitioned endpoint sampling, Qiskit circuits, optional PhaseTensor integration and reproducible experiment exports. See [scientific evidence](docs/applied.md).
+
+## Final remediation before 0.1.0
+
+Corrected log-domain ranking, defective detection times, readout estimator reporting, strict scientific exports, simulation-plan integrity and circuit resource accounting. NamedTuple field extensions in development require named-attribute access for compatibility.

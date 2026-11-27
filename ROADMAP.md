@@ -1623,3 +1623,5 @@ The [consolidation review](docs/consolidation-review.md) records the evidence an
 ## Development checkpoint — modules 21–25
 
 The [applied module index](docs/applied.md) records implemented capabilities, evidence and limits. Publication remains subject to owner approval.
+
+The final development review covers R09–R15. See [release preparation](docs/final-remediation.md).

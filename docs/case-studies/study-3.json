@@ -18,7 +18,7 @@
   },
   "limitations": "Small reversible kernel.",
   "model": "Szegedy correspondence",
-  "peak_rss_bytes": 107577344,
+  "peak_rss_bytes": 108511232,
   "protocol": "spectrum",
   "results": {
     "classical_eigenvalues": [
@@ -32,8 +32,8 @@
       2.0943951023931953
     ]
   },
-  "runtime_s": 0.0018839579999998524,
-  "schema": 1,
+  "runtime_s": 0.0007742090000000257,
+  "schema": 2,
   "seed": 0,
   "solver": "two reflections",
   "tolerance": 1e-10,

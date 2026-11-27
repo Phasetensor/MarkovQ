@@ -55,15 +55,21 @@ def graph_circuit(operator: ArrayLike):
 
 def circuit_resources(original, compiled, backend=None) -> dict:
     """Use initial placement to distinguish input-data wires from workspace."""
-    operations = [op for op in compiled.data if not getattr(op.operation, "_directive", False)]
+    operations = [
+        op for op in compiled.data if not getattr(op.operation, "_directive", False)
+    ]
     used = {compiled.find_bit(q).index for op in operations for q in op.qubits}
-    data = [i for i,q in enumerate(original.qubits) if q not in original.ancillas]
+    data = [i for i, q in enumerate(original.qubits) if q not in original.ancillas]
     mapping = None
     if compiled.layout is not None:
         mapping = compiled.layout.initial_index_layout(filter_ancillas=True)
     elif compiled.qubits == original.qubits:
         mapping = list(range(original.num_qubits))
-    placed = None if mapping is None or len(mapping) != original.num_qubits else {mapping[i] for i in data}
+    placed = (
+        None
+        if mapping is None or len(mapping) != original.num_qubits
+        else {mapping[i] for i in data}
+    )
     return {
         "logical_qubits": len(data),
         "represented_logical_qubits": None if placed is None else len(placed),
@@ -93,7 +99,7 @@ def simulate(
     started = perf_counter()
     n = circuit.num_qubits
     v = ket(initial, 2**n)
-    prepared = QuantumCircuit(n)
+    prepared = QuantumCircuit(*circuit.qregs)
     prepared.prepare_state(v, range(n))
     prepared.compose(circuit, inplace=True)
     probabilities = Statevector.from_instruction(prepared).probabilities()
@@ -133,7 +139,7 @@ def execute_backend(circuit, initial: ArrayLike, backend, *, shots: int, seed: i
         raise ValueError("backend execution requires positive shots")
     started = perf_counter()
     n = circuit.num_qubits
-    prepared = QuantumCircuit(n)
+    prepared = QuantumCircuit(*circuit.qregs)
     prepared.prepare_state(ket(initial, 2**n), range(n))
     prepared.compose(circuit, inplace=True)
     prepared.measure_all()

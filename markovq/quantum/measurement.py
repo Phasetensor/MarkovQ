@@ -230,8 +230,11 @@ def eventual_detection(
         float(linalg.norm((dark - (np.eye(len(u)) - a @ adj(a))) @ v))
         for a in alternatives
     )
-    error = variation + inv + coupling + floor * (
-        1 + float(linalg.norm(abs(dark) @ abs(v)))
+    error = (
+        variation
+        + inv
+        + coupling
+        + floor * (1 + float(linalg.norm(abs(dark) @ abs(v))))
     )
     unconditional = np.nan
     unconditional_status = "unresolved"

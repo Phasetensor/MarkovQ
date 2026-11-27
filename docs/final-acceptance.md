@@ -23,3 +23,5 @@ Reproduce the figure with python -m benchmarks.applied_figure docs/case-studies/
 The PhaseTensor experiment allocated 10,000 simulated pilot and final shots through ShotWeave. Independent reference and distribution samples brought the total to 39,936. The sequential comparison for IIZ was inconclusive at tolerance 0.1. The position-level test measured total variation 0.124 under the specified synthetic readout. This evidence concerns a simulator with a known generating model.
 
 Owner approval, release signing or tagging, PyPI publication and public installation checks belong to a subsequent release decision.
+
+[Final review findings and release preparation](final-remediation.md). The version remains 0.1.0.dev0 pending owner authorization.

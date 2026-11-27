@@ -35,3 +35,5 @@ Each candidate records a represented success probability and, when computed from
 ## Compatibility of results
 
 Existing calls and named attributes are preserved. EventualDetection and Mixing have additional tuple fields, and SearchResult has an optional log_success field. Code unpacking a fixed number of tuple elements should use named attributes. Unresolved detection now returns NaN with a diagnostic. A dense Szegedy allocation beyond the new budget raises MemoryError before allocation.
+
+An exactly disconnected invariant coordinate block can certify positive non-detection even when its probability cannot be squared in floating point. Inspect diagnostics.unconditional_status separately from mean_status. In dense rotated models the projection can be comparable to its numerical uncertainty. Such an expectation can remain unresolved. Search candidates use first maximum in the log domain, including when all ordinary positive probabilities have underflowed. See [final remediation](final-remediation.md).

@@ -18,16 +18,37 @@
     ]
   },
   "circuit": {
+    "addressed_wire_indices": [
+      0,
+      1,
+      2
+    ],
     "ancillary_qubits": 0,
+    "backend_capacity": null,
+    "compiled_width": 3,
     "depth": 64,
     "evidence": "ideal circuit simulation",
     "logical_qubits": 3,
+    "measurement_count": 3,
+    "physical_qubits_addressed": 3,
     "provider_jobs": 0,
-    "runtime_s": 0.016723700000000008,
+    "represented_logical_qubits": 3,
+    "requested_shots": 0,
+    "returned_shots": 0,
+    "runtime_s": 0.017031939999995416,
     "shots": 0,
     "two_qubit_gates": 30
   },
-  "corrected_average_bit_probability": 1.0028579138177751,
+  "corrected_average_bit_estimator": {
+    "calibration_uncertainty_propagated": false,
+    "domain_status": "outside",
+    "physical_domain": [
+      0,
+      1
+    ],
+    "sampling_standard_error": 0.0026904281313626342,
+    "unconstrained_estimate": 1.0028579138177751
+  },
   "evidence": "synthetic calibration and simulated sampling",
   "final_shots": [
     3957,
@@ -43,12 +64,14 @@
     0,
     0.9999999999999996
   ],
+  "ideal_average_bit_probability": 0.9999999999999996,
   "observed": [
     0.004199999999999998,
     0.06579999999999996,
     0.055799999999999975,
     0.8741999999999996
   ],
+  "observed_empirical_average_bit_probability": 0.9376227207153265,
   "pauli_comparisons": {
     "IIZ": {
       "confidence": 0.975,
