@@ -290,38 +290,42 @@ def test_sparse_szegedy_topologies(n):
         close(np.linalg.norm(w.evolve(v, 5)), 1)
 
 
-@pytest.mark.parametrize("value",[-1.,np.nan,0.])
-def test_invalid_duration_is_unresolved(monkeypatch,value):
+@pytest.mark.parametrize("value", [-1.0, np.nan, 0.0])
+def test_invalid_duration_is_unresolved(monkeypatch, value):
     from scipy import linalg
-    def invalid(a,rhs,method):
-        return np.eye(len(a))*value
-    monkeypatch.setattr(linalg,"solve_discrete_lyapunov",invalid)
-    r=q.eventual_detection(H,V,P)
+
+    def invalid(a, rhs, method):
+        return np.eye(len(a)) * value
+
+    monkeypatch.setattr(linalg, "solve_discrete_lyapunov", invalid)
+    r = q.eventual_detection(H, V, P)
     assert np.isnan(r.conditional_mean)
-    assert r.diagnostics.mean_status=="unresolved"
+    assert r.diagnostics.mean_status == "unresolved"
 
 
 def test_unconditional_versus_conditional():
-    r=q.eventual_detection(np.eye(2),[0,1],P)
-    assert r.diagnostics.mean_status=="undefined"
+    r = q.eventual_detection(np.eye(2), [0, 1], P)
+    assert r.diagnostics.mean_status == "undefined"
     assert np.isinf(r.diagnostics.unconditional_mean)
     assert np.isnan(r.conditional_mean)
-    r=q.eventual_detection(np.eye(2),[1e-20,1],P)
-    close(r.conditional_mean,1)
+    r = q.eventual_detection(np.eye(2), [1e-20, 1], P)
+    close(r.conditional_mean, 1)
     assert np.isinf(r.diagnostics.unconditional_mean)
 
 
 def test_high_dimensional_lyapunov():
     # With full detection the first measurement always succeeds.
-    r=q.eventual_detection(np.eye(9),np.eye(9)[0],np.eye(9))
-    close([r.conditional_mean,r.probability],[1,1])
-    assert r.diagnostics.spectral_radius==0
+    r = q.eventual_detection(np.eye(9), np.eye(9)[0], np.eye(9))
+    close([r.conditional_mean, r.probability], [1, 1])
+    assert r.diagnostics.spectral_radius == 0
 
 
 def test_cost_categories_overflow():
-    r=SearchResult(np.array([0]),np.array([1e-305]),0,np.array([10000]),np.array([0.]))
-    costs=r.expected_cost(0)
+    r = SearchResult(
+        np.array([0]), np.array([1e-305]), 0, np.array([10000]), np.array([0.0])
+    )
+    costs = r.expected_cost(0)
     assert np.isfinite(costs["independent_trials"])
     assert np.isinf(costs["marking_queries"])
-    assert r.resource_status(0)["marking_queries"]=="finite-overflow"
-    assert r.resource_status(0)["gate_count"]=="unmeasured"
+    assert r.resource_status(0)["marking_queries"] == "finite-overflow"
+    assert r.resource_status(0)["gate_count"] == "unmeasured"

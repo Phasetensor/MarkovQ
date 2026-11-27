@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import warnings
 from typing import Iterable, NamedTuple, Optional
 
 import numpy as np
@@ -173,18 +174,20 @@ def eventual_detection(
     mean = np.nan
     radius = condition = residual = hermiticity = minimum = np.nan
     mean_status = "undefined" if amplitude == 0 else "unresolved"
-    projection_error=floor*linalg.norm(abs(bright).T@abs(v))
+    projection_error = floor * linalg.norm(abs(bright).T @ abs(v))
     if not ambiguous and amplitude > projection_error:
-        transformed=linalg.blas.zgemm(1.,u,bright)
-        survivor=transformed-linalg.blas.zgemm(1.,p,transformed)
-        c=linalg.blas.zgemm(1.,bright,survivor,trans_a=2)
+        transformed = linalg.blas.zgemm(1.0, u, bright)
+        survivor = transformed - linalg.blas.zgemm(1.0, p, transformed)
+        c = linalg.blas.zgemm(1.0, bright, survivor, trans_a=2)
         radius = float(np.max(abs(linalg.eigvals(c))))
         if radius < 1 - 4 * eps:
             try:
                 eye = np.eye(len(vb))
-                duration = linalg.solve_discrete_lyapunov(
-                    adj(c), eye, method="direct" if len(c) <= 8 else "bilinear"
-                )
+                with warnings.catch_warnings():
+                    warnings.simplefilter("error", linalg.LinAlgWarning)
+                    duration = linalg.solve_discrete_lyapunov(
+                        adj(c), eye, method="direct" if len(c) <= 8 else "bilinear"
+                    )
                 norm = float(linalg.norm(duration, 2))
                 condition = (1 + float(linalg.norm(c, 2)) ** 2) * norm
                 residual = float(
@@ -206,7 +209,7 @@ def eventual_detection(
                 ):
                     mean = estimate
                     mean_status = "finite"
-            except (ValueError, np.linalg.LinAlgError):
+            except (ValueError, np.linalg.LinAlgError, linalg.LinAlgWarning):
                 mean_status = "unresolved"
     if ambiguous:
         prob = mean = np.nan

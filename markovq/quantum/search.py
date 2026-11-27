@@ -80,18 +80,20 @@ class SearchResult(NamedTuple):
             "analog_oracle_time": cost(self.oracle_time[index]),
         }
 
-    def resource_status(self,index: int) -> dict[str,str]:
+    def resource_status(self, index: int) -> dict[str, str]:
         """Classify each ideal cost and explicitly identify unmeasured physical costs."""
-        pstatus=self.cost_status(index)
-        result={}
-        for name,value in self.expected_cost(index).items():
+        pstatus = self.cost_status(index)
+        result = {}
+        for name, value in self.expected_cost(index).items():
             if np.isfinite(value):
-                result[name]="finite"
-            elif pstatus=="zero-represented":
-                result[name]="infinite-for-represented-zero"
+                result[name] = "finite"
+            elif pstatus == "zero-represented":
+                result[name] = "infinite-for-represented-zero"
             else:
-                result[name]="finite-overflow"
-        result.update(gate_count="unmeasured",wall_time="unmeasured",hardware_cost="unmeasured")
+                result[name] = "finite-overflow"
+        result.update(
+            gate_count="unmeasured", wall_time="unmeasured", hardware_cost="unmeasured"
+        )
         return result
 
 
