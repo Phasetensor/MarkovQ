@@ -6,7 +6,7 @@ from scipy import linalg, sparse
 from markovq import quantum as q
 
 X = np.array([[0, 1], [1, 0]])
-I = np.eye(2)
+ID = np.eye(2)
 V = np.array([1.0, 0.0])
 P = np.diag(V)
 H = q.hadamard()
@@ -41,7 +41,7 @@ def test_szegedy_phase_pair_and_reverse():
     p = np.array([[0.75, 0.25], [0.25, 0.75]])
     w = q.szegedy(p)
     for b in [w.A, w.B]:
-        close(b.T @ b, I)
+        close(b.T @ b, ID)
     for r in [w.reflection_a, w.reflection_b]:
         close(r @ r, np.eye(4), atol=1e-12)
     close(w.discriminant, p)
@@ -68,14 +68,14 @@ def test_eventual_and_finite():
     result = q.eventual_detection(u, v, np.diag([1, 0, 0]))
     close([result.probability, result.conditional_mean], [0.5, 2])
     close(result.dark_projector, np.diag([0, 0, 1]), atol=1e-12)
-    assert np.isnan(q.eventual_detection(I, V, np.zeros((2, 2))).conditional_mean)
+    assert np.isnan(q.eventual_detection(ID, V, np.zeros((2, 2))).conditional_mean)
 
 
 def test_renewal_and_mixing():
     r = q.recurrence(H, V, 10)
     close(r.occupancy[2::2], 1)
     close(abs(r.first_amplitudes) ** 2, r.monitored.first, atol=1e-12)
-    for u, v, limit in [(X, V, [0.5, 0.5]), (I, V, [1, 0])]:
+    for u, v, limit in [(X, V, [0.5, 0.5]), (ID, V, [1, 0])]:
         m = q.quantum_mixing(u, v, 8)
         close(m.average, limit)
         close(m.limiting_average, limit, atol=1e-12)
@@ -100,7 +100,7 @@ def test_search_resources():
     close(b, 1 - 0.75 ** np.arange(1, 4))
     coined = q.cycle_walk(4)
     close(q.coined_search(coined, np.ones(8) / np.sqrt(8), [2], [0]).success, [0.25])
-    close(q.szegedy_search(q.szegedy(I), [0.5, 0.5], [1], [0]).success, [0.5])
+    close(q.szegedy_search(q.szegedy(ID), [0.5, 0.5], [1], [0]).success, [0.5])
 
 
 @pytest.mark.parametrize("method", ["expm", "ode"])
@@ -125,26 +125,26 @@ def test_open_dynamics(method):
         lambda: q.cycle_walk(1),
         lambda: q.cycle_walk(4, np.ones((2, 2))),
         lambda: q.line_distribution(1, coin=np.eye(3)),
-        lambda: q.graph_walk(I),
+        lambda: q.graph_walk(ID),
         lambda: q.graph_walk(X, []),
         lambda: q.continuous_walk(X, V, np.inf),
         lambda: q.continuous_walk(X, V, 1, "bad"),
-        lambda: q.szegedy(I, np.eye(3)),
+        lambda: q.szegedy(ID, np.eye(3)),
         lambda: q.first_detection(X, V, X, 0),
         lambda: q.first_detection(X, [1, 1], P, 1),
         lambda: q.first_detection([], V, P, 1),
-        lambda: q.eventual_detection(I, V, P, -1),
-        lambda: q.quantum_mixing(I, V, 0),
-        lambda: q.quantum_mixing(I, V, 2, [0, -1]),
-        lambda: q.discrete_search(I, V, [0], []),
+        lambda: q.eventual_detection(ID, V, P, -1),
+        lambda: q.quantum_mixing(ID, V, 0),
+        lambda: q.quantum_mixing(ID, V, 2, [0, -1]),
+        lambda: q.discrete_search(ID, V, [0], []),
         lambda: q.continuous_search([[0, 1], [0, 0]], 1, V, [0], [0]),
         lambda: q.continuous_search(X, 1, V, [0], [-1]),
         lambda: q.density_matrix(np.diag([2, -1])),
         lambda: q.liouvillian([[0, 1], [0, 0]]),
-        lambda: q.liouvillian(I, [np.eye(3)]),
-        lambda: q.evolve_density(I, P, [-1]),
-        lambda: q.evolve_density(I, P, [0], atol=-1),
-        lambda: q.evolve_density(I, P, [0], method="bad"),
+        lambda: q.liouvillian(ID, [np.eye(3)]),
+        lambda: q.evolve_density(ID, P, [-1]),
+        lambda: q.evolve_density(ID, P, [0], atol=-1),
+        lambda: q.evolve_density(ID, P, [0], method="bad"),
         lambda: q.stochastic_walk(X, [[-1, 0], [0, 0]], 1),
     ],
 )
@@ -178,9 +178,9 @@ def test_projective_detection_after_propagation():
     # Target is a coherent superposition. An unmonitored occupancy of 1/2
     # at every time does not imply repeated new detection events.
     plus = np.ones(2) / np.sqrt(2)
-    result = q.first_detection(I, V, np.outer(plus, plus), 4)
+    result = q.first_detection(ID, V, np.outer(plus, plus), 4)
     close(result.first, [0, 0.5, 0, 0, 0], atol=1e-12)
-    event = q.eventual_detection(I, V, np.outer(plus, plus))
+    event = q.eventual_detection(ID, V, np.outer(plus, plus))
     close([event.probability, event.conditional_mean], [0.5, 1])
 
 
@@ -197,7 +197,7 @@ def test_independent_trials_and_search_steps():
     result = q.coined_search(walk, v, [1], range(4))
     close(result.success, reference)
     close(result.expected_cost(2)["marking_queries"], 2 / reference[2])
-    empty = q.discrete_search(I, V, [], [0])
+    empty = q.discrete_search(ID, V, [], [0])
     assert np.isinf(empty.expected_cost(0)["final_measurements"])
     assert empty.expected_cost(0)["marking_queries"] == 0
     analog = q.continuous_search(X, 0.3, V, [0], [0.2])

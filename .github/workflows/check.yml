@@ -24,7 +24,7 @@ jobs:
           name: quantum-benchmark-python-${{ matrix.python }}
           path: /tmp/mq-benchmark.json
       - run: python -m ruff check .
-      - run: python -m ruff format --check .
+      - run: python -m ruff format --check --diff .
       - run: python -m mypy --ignore-missing-imports markovq
       - run: python -m build && python -m twine check --strict dist/*
       - run: |
