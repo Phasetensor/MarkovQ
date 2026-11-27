@@ -148,10 +148,16 @@ def continuous_walk(
         return expm_multiply((-1j * time) * h, v)
     a = h if isinstance(h, np.ndarray) else h.toarray()
     if method == "dense":
+        import platform
+        import scipy
+        if platform.system()=="Darwin" and platform.machine()=="arm64" and np.__version__=="2.0.2" and scipy.__version__=="1.13.1":
+            from scipy.sparse import csc_matrix
+            from scipy.sparse.linalg import expm
+            return expm(csc_matrix(-1j*time*a))@v
         return linalg.expm(-1j * time * a) @ v
     if method == "spectral":
         w, b = linalg.eigh(a)
-        return b @ (np.exp(-1j * time * w) * (adj(b) @ v))
+        return np.einsum("ij,j->i",b,np.exp(-1j*time*w)*np.einsum("ij,i->j",b.conj(),v))
     raise ValueError("method must be krylov, dense or spectral")
 
 
@@ -168,9 +174,13 @@ class SzegedyWalk(NamedTuple):
 
 
 def szegedy(
-    transition: MatrixInput, reverse: Optional[MatrixInput] = None
+    transition: MatrixInput, reverse: Optional[MatrixInput] = None, *, max_bytes: int = 512*1024**2
 ) -> SzegedyWalk:
     """B uses swap-embedded rows of reverse, defaulting to P (swap construction)."""
+    from .implicit import dense_szegedy_bytes
+    shape=np.shape(transition)
+    if len(shape)==2 and dense_szegedy_bytes(shape[0])>max_bytes:
+        raise MemoryError("dense Szegedy budget exceeded; use implicit_szegedy")
     p = dense(transition)
     q = p if reverse is None else dense(reverse)
     if q.shape != p.shape:
