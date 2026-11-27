@@ -1,0 +1,28 @@
+name: Foundations
+on: [push, pull_request]
+permissions:
+  contents: read
+jobs:
+  scientific:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        python: ['3.9', '3.12']
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python }}
+      - run: python -m pip install . pytest coverage mypy ruff build twine
+      - run: python -m coverage run --branch --source=markovq -m pytest -q
+      - run: python -m coverage json && python scripts/coverage_gate.py
+      - run: python -m benchmarks.foundations
+      - run: python -m ruff check .
+      - run: python -m ruff format --check .
+      - run: python -m mypy --ignore-missing-imports markovq
+      - run: python -m build && python -m twine check --strict dist/*
+      - run: |
+          python -m venv /tmp/markovq-install
+          /tmp/markovq-install/bin/pip install dist/*.whl
+          cd /tmp
+          /tmp/markovq-install/bin/python -c 'from markovq import line_walk; assert line_walk(3).n == 3'

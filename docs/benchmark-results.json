@@ -1,0 +1,36 @@
+{
+  "python": "3.9.6",
+  "numpy": "2.0.2",
+  "scipy": "1.13.1",
+  "trajectories": 10000,
+  "seeds": [
+    231,
+    232,
+    233,
+    234
+  ],
+  "lattice_msd": {
+    "estimate": 19.8324,
+    "reference": 20,
+    "standard_error": 0.271836312000535
+  },
+  "restricted_ruin_time": {
+    "estimate": 16.0322,
+    "reference": 16,
+    "standard_error": 0.12561303347749367
+  },
+  "censored_ruin_paths": 0,
+  "ctmc_endpoint": {
+    "estimate": 0.6229,
+    "reference": 0.6334752877547574,
+    "standard_error": 0.0048468451791674845
+  },
+  "ctmc_uniformization_error": 4.317657342767234e-13,
+  "levy_endpoint": {
+    "estimate": 0.6961942730991318,
+    "reference": 0.7,
+    "standard_error": 0.007273829736601933
+  },
+  "star_spectral_error": 0.0,
+  "elapsed_seconds": 0.20369512499999987
+}
