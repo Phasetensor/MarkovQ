@@ -64,21 +64,21 @@ def _threshold(value: float) -> float:
     return value
 
 
-def _groups(values: np.ndarray,tol: float) -> list[np.ndarray]:
+def _groups(values: np.ndarray, tol: float) -> list[np.ndarray]:
     """Connected angular components, including the circular wraparound edge."""
-    order=np.argsort(np.angle(values),kind="stable")
-    gaps=abs(values[order]-values[np.roll(order,1)])
-    cuts=np.flatnonzero(gaps>tol)
+    order = np.argsort(np.angle(values), kind="stable")
+    gaps = abs(values[order] - values[np.roll(order, 1)])
+    cuts = np.flatnonzero(gaps > tol)
     if not len(cuts):
         return [order]
-    ring=np.roll(order,-cuts[0])
-    return list(np.split(ring,np.flatnonzero(abs(np.diff(values[ring]))>tol)+1))
+    ring = np.roll(order, -cuts[0])
+    return list(np.split(ring, np.flatnonzero(abs(np.diff(values[ring])) > tol) + 1))
 
 
-def phase_spaces(step: ArrayLike, tol: float=TOL) -> list[np.ndarray]:
-    u=unitary(step)
-    t,b=linalg.schur(u,output="complex")
-    return [b[:,g] for g in _groups(t.diagonal(),_threshold(tol))]
+def phase_spaces(step: ArrayLike, tol: float = TOL) -> list[np.ndarray]:
+    u = unitary(step)
+    t, b = linalg.schur(u, output="complex")
+    return [b[:, g] for g in _groups(t.diagonal(), _threshold(tol))]
 
 
 class DetectionDiagnostics(NamedTuple):
@@ -89,7 +89,7 @@ class DetectionDiagnostics(NamedTuple):
     rank_tol: float
     dark_invariance_residual: float
     dark_target_residual: float
-    probability_range: tuple[float,float]
+    probability_range: tuple[float, float]
     spectral_radius: float
     condition_bound: float
     relative_residual: float
@@ -104,66 +104,128 @@ class EventualDetection(NamedTuple):
     diagnostics: DetectionDiagnostics
 
 
-def eventual_detection(step: ArrayLike,initial: ArrayLike,target: ArrayLike,tol: float=TOL,*,phase_tol: Optional[float]=None,rank_tol: Optional[float]=None,solver_tol: float=1e-7) -> EventualDetection:
-    u=unitary(step)
-    v=ket(initial,len(u))
-    p=projector(target,len(u))
+def eventual_detection(
+    step: ArrayLike,
+    initial: ArrayLike,
+    target: ArrayLike,
+    tol: float = TOL,
+    *,
+    phase_tol: Optional[float] = None,
+    rank_tol: Optional[float] = None,
+    solver_tol: float = 1e-7,
+) -> EventualDetection:
+    u = unitary(step)
+    v = ket(initial, len(u))
+    p = projector(target, len(u))
     _threshold(tol)
-    pt=_threshold(tol if phase_tol is None else phase_tol)
-    rt=_threshold(tol if rank_tol is None else rank_tol)
-    if not 0<solver_tol<1:
+    pt = _threshold(tol if phase_tol is None else phase_tol)
+    rt = _threshold(tol if rank_tol is None else rank_tol)
+    if not 0 < solver_tol < 1:
         raise ValueError("invalid solver tolerance")
-    schur,b=linalg.schur(u,output="complex")
-    eps=np.finfo(float).eps
-    floor=8*len(u)*eps
-    def split(phase,rank):
-        blocks=[]
-        for group in _groups(schur.diagonal(),phase):
-            basis=b[:,group]
-            _,s,vh=linalg.svd(p@basis,full_matrices=False)
-            blocks.append(basis@adj(vh[s>rank]))
+    schur, b = linalg.schur(u, output="complex")
+    eps = float(np.finfo(float).eps)
+    floor = 8 * len(u) * eps
+
+    def split(phase, rank):
+        blocks = []
+        for group in _groups(schur.diagonal(), phase):
+            basis = b[:, group]
+            _, s, vh = linalg.svd(p @ basis, full_matrices=False)
+            blocks.append(basis @ adj(vh[s > rank]))
         return np.column_stack(blocks)
+
     # Keep individually resolved phases and couplings in the central model.
-    bright=split(min(pt,floor),min(rt,floor))
-    alternatives=[split(pt,rt),split(max(floor,pt*4),max(floor,rt*4)),split(floor,floor)]
-    vb=adj(bright)@v
-    prob=float(np.vdot(vb,vb).real)
-    estimates=[prob]+[float(np.linalg.norm(adj(a)@v)**2) for a in alternatives]
-    dark=np.eye(len(u))-bright@adj(bright)
-    inv=float(linalg.norm(u@dark-dark@u,2))
-    coupling=float(linalg.norm(p@dark,2))
-    ambiguous=any(x.shape!=bright.shape for x in alternatives) or max(estimates)-min(estimates)>1e-8 or max(inv,coupling)>floor*8
-    # Sub-resolution but nonzero coupling cannot certify permanent darkness.
-    if np.any(dark) and 0<coupling<=floor and np.allclose(u,np.diag(np.diag(u)),rtol=0,atol=0):
-        ambiguous |= bool(np.any((abs(p)>0)&(abs(p)<floor)) and bright.shape[1]<len(u))
-    status="tolerance-sensitive" if ambiguous else "resolved-at-precision"
-    mean=np.nan
-    radius=condition=residual=hermiticity=minimum=np.nan
-    mean_status="undefined" if prob<=eps**2 else "unresolved"
-    if not ambiguous and prob>eps**2:
-        c=adj(bright)@(np.eye(len(u))-p)@u@bright
-        radius=float(max(abs(linalg.eigvals(c))))
-        if radius<1-4*eps:
+    bright = split(min(pt, floor), min(rt, floor))
+    alternatives = [
+        split(pt, rt),
+        split(max(floor, pt * 4), max(floor, rt * 4)),
+        split(floor, floor),
+        split(floor/8, floor/8),
+    ]
+    vb = adj(bright) @ v
+    amplitude=float(linalg.norm(vb))
+    prob = amplitude**2
+    estimates = [prob] + [float(np.linalg.norm(adj(a) @ v) ** 2) for a in alternatives]
+    dark = np.eye(len(u)) - bright @ adj(bright)
+    inv = float(linalg.norm(u @ dark - dark @ u, 2))
+    coupling = float(linalg.norm(p @ dark, 2))
+    ambiguous = bool(
+        any(x.shape != bright.shape for x in alternatives)
+        or max(estimates) - min(estimates) > 1e-8
+        or max(inv, coupling) > floor * 8
+    )
+    # A tiny absolute coupling may still exceed its componentwise error.
+    # Use a posteriori eigenvector residual / spectral separation for isolated modes.
+    z=schur.diagonal()
+    for g in _groups(z,min(pt,floor)):
+        if len(g)!=1:
+            continue
+        k=int(g[0])
+        mode=b[:,k]
+        strength=float(linalg.norm(p@mode))
+        if 0<strength<=min(rt,floor):
+            gap=float(np.min(abs(np.delete(z,k)-z[k]),initial=2.))
+            product_error=floor*linalg.norm(abs(p)@abs(mode))
+            rotation_error=linalg.norm(u@mode-z[k]*mode)/gap
+            if strength>4*(product_error+rotation_error):
+                ambiguous=True
+    status = "tolerance-sensitive" if ambiguous else "resolved-at-precision"
+    mean = np.nan
+    radius = condition = residual = hermiticity = minimum = np.nan
+    mean_status = "undefined" if amplitude==0 else "unresolved"
+    if not ambiguous and amplitude>0:
+        c = adj(bright) @ (np.eye(len(u)) - p) @ u @ bright
+        radius = float(np.max(abs(linalg.eigvals(c))))
+        if radius < 1 - 4 * eps:
             try:
-                eye=np.eye(len(vb))
-                duration=linalg.solve_discrete_lyapunov(adj(c),eye,method="direct" if len(c)<=8 else "bilinear")
-                norm=float(linalg.norm(duration,2))
-                condition=(1+float(linalg.norm(c,2))**2)*norm
-                residual=float(linalg.norm(duration-adj(c)@duration@c-eye,2)/(1+2*norm))
-                hermiticity=float(linalg.norm(duration-adj(duration),2)/max(1,norm))
-                minimum=float(linalg.eigvalsh((duration+adj(duration))/2)[0])
-                estimate=float(np.vdot(vb,duration@vb).real/prob)
-                if np.isfinite(estimate) and estimate>=1-solver_tol and minimum>=1-solver_tol and max(condition*max(eps,residual),hermiticity)<solver_tol:
-                    mean=estimate
-                    mean_status="finite"
-            except (ValueError,np.linalg.LinAlgError):
-                mean_status="unresolved"
+                eye = np.eye(len(vb))
+                duration = linalg.solve_discrete_lyapunov(
+                    adj(c), eye, method="direct" if len(c) <= 8 else "bilinear"
+                )
+                norm = float(linalg.norm(duration, 2))
+                condition = (1 + float(linalg.norm(c, 2)) ** 2) * norm
+                residual = float(
+                    linalg.norm(duration - adj(c) @ duration @ c - eye, 2)
+                    / (1 + 2 * norm)
+                )
+                hermiticity = float(
+                    linalg.norm(duration - adj(duration), 2) / max(1, norm)
+                )
+                minimum = float(linalg.eigvalsh((duration + adj(duration)) / 2)[0])
+                normalized=vb/amplitude
+                estimate = float(np.vdot(normalized, duration @ normalized).real)
+                if (
+                    np.isfinite(estimate)
+                    and estimate >= 1 - solver_tol
+                    and minimum >= 1 - solver_tol
+                    and max(condition * max(float(eps), float(residual)), hermiticity) < solver_tol
+                ):
+                    mean = estimate
+                    mean_status = "finite"
+            except (ValueError, np.linalg.LinAlgError):
+                mean_status = "unresolved"
     if ambiguous:
-        prob=mean=np.nan
-        mean_status="unresolved"
-    unconditional=np.nan if ambiguous else (np.inf if np.linalg.norm(dark@v)>floor else mean)
-    diag=DetectionDiagnostics(status,mean_status,unconditional,pt,rt,inv,coupling,(min(estimates),max(estimates)),radius,condition,residual,hermiticity,minimum)
-    return EventualDetection(prob,mean,dark,diag)
+        prob = mean = np.nan
+        mean_status = "unresolved"
+    unconditional = (
+        np.nan if ambiguous else (np.inf if np.linalg.norm(dark @ v) > floor else mean)
+    )
+    diag = DetectionDiagnostics(
+        status,
+        mean_status,
+        unconditional,
+        pt,
+        rt,
+        inv,
+        coupling,
+        (min(estimates), max(estimates)),
+        radius,
+        condition,
+        residual,
+        hermiticity,
+        minimum,
+    )
+    return EventualDetection(prob, mean, dark, diag)
 
 
 class Recurrence(NamedTuple):
@@ -196,6 +258,7 @@ class Mixing(NamedTuple):
     finite_spectral: np.ndarray
     limit_sensitivity_tv: float
     spectral_status: str
+    unresolved_splitting_tv: float
 
 
 def quantum_mixing(
@@ -203,7 +266,8 @@ def quantum_mixing(
     initial: ArrayLike,
     horizon: int,
     positions: Optional[ArrayLike] = None,
-    *, phase_tol: float = TOL,
+    *,
+    phase_tol: float = TOL,
 ) -> Mixing:
     u = unitary(step)
     v = ket(initial, len(u))
@@ -222,26 +286,47 @@ def quantum_mixing(
     def marginal(a):
         return np.bincount(labels, abs(a) ** 2)
 
-    schur,b=linalg.schur(u,output="complex")
-    z=schur.diagonal()
-    floor=8*len(u)*np.finfo(float).eps
-    components=b*(adj(b)@v)
+    schur, b = linalg.schur(u, output="complex")
+    z = schur.diagonal()
+    floor = 8 * len(u) * np.finfo(float).eps
+    components = b * (adj(b) @ v)
+
     def limiting(tolerance):
-        return sum((marginal(components[:,g].sum(axis=1)) for g in _groups(z,tolerance)),start=np.zeros(labels.max()+1))
-    tol=_threshold(phase_tol)
-    limit=limiting(min(tol,floor))
-    sensitivity=float(abs(limit-limiting(max(tol,floor))).sum()/2)
-    angle=np.angle(z[:,None]*z.conj()[None,:])
-    scale=angle/(2*np.pi)
-    kernel=np.exp(.5j*(horizon-1)*angle)*np.sinc(horizon*scale)/np.sinc(scale)
-    spectral=np.bincount(labels,np.einsum("ij,jk,ik->i",components,kernel,components.conj()).real)
-    status="tolerance-sensitive" if sensitivity>floor else "resolved-at-precision"
+        return sum(
+            (marginal(components[:, g].sum(axis=1)) for g in _groups(z, tolerance)),
+            start=np.zeros(labels.max() + 1),
+        )
+
+    tol = _threshold(phase_tol)
+    limit = limiting(min(tol, floor))
+    sensitivity = float(abs(limit - limiting(max(tol, floor))).sum() / 2)
+    angle = np.angle(z[:, None] * z.conj()[None, :])
+    scale = angle / (2 * np.pi)
+    kernel = (
+        np.exp(0.5j * (horizon - 1) * angle) * np.sinc(horizon * scale) / np.sinc(scale)
+    )
+    spectral = np.bincount(
+        labels, np.einsum("ij,jk,ik->i", components, kernel, components.conj()).real
+    )
+    status = "tolerance-sensitive" if sensitivity > floor else "resolved-at-precision"
+    split_tv=float(abs(limit-limiting(0.)).sum()/2)
+    if split_tv>floor and status=="resolved-at-precision":
+        status="unresolved-phase-splitting"
     history = []
     for _ in range(horizon):
         history.append(marginal(v))
-        v = u @ v
+        v = np.einsum("ij,j->i",u,v)
     avg = np.mean(history, axis=0)
-    return Mixing(np.array(history), avg, limit, float(abs(avg - limit).sum() / 2),spectral,sensitivity,status)
+    return Mixing(
+        np.array(history),
+        avg,
+        limit,
+        float(abs(avg - limit).sum() / 2),
+        spectral,
+        sensitivity,
+        status,
+        split_tv,
+    )
 
 
 def dephased_mixing(

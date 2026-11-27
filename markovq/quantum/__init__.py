@@ -1,6 +1,6 @@
 """Quantum walk dynamics and explicitly monitored measurement protocols."""
 
-from .implicit import implicit_szegedy, dense_szegedy_bytes
+from .implicit import dense_szegedy_bytes, implicit_szegedy
 from .measurement import (
     dephased_mixing,
     eventual_detection,
@@ -28,7 +28,9 @@ from .walks import (
     szegedy,
 )
 
-__all__ = ["implicit_szegedy","dense_szegedy_bytes",
+__all__ = [
+    "implicit_szegedy",
+    "dense_szegedy_bytes",
     "amplitude_amplification",
     "classical_search",
     "coined_search",

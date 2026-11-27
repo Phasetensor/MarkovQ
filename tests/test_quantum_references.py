@@ -20,7 +20,7 @@ def test_qiskit_coined_operator():
     assert_allclose(Operator(circuit).data, q.cycle_walk(4).operator, atol=1e-13)
 
 
-@pytest.mark.parametrize("method",["expm","ode","sparse","matrix-free","bdf"])
+@pytest.mark.parametrize("method", ["expm", "ode", "sparse", "matrix-free", "bdf"])
 def test_qutip_driven_dissipator(method):
     import qutip as qt
 
@@ -36,4 +36,6 @@ def test_qutip_driven_dissipator(method):
         options={"atol": 1e-12, "rtol": 1e-10},
     )
     states = np.array([x.full() for x in ref.states])
-    assert_allclose(q.evolve_density(h, rho, times, [c],method).states, states, atol=1e-9)
+    assert_allclose(
+        q.evolve_density(h, rho, times, [c], method).states, states, atol=1e-9
+    )

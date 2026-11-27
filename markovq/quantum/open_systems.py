@@ -7,11 +7,10 @@ from typing import Iterable, NamedTuple
 import numpy as np
 from numpy.typing import ArrayLike
 from scipy import sparse
-from scipy.sparse.linalg import LinearOperator, expm_multiply
 from scipy.integrate import solve_ivp
-from scipy.linalg import expm
+from scipy.sparse.linalg import LinearOperator, expm_multiply
 
-from .walks import TOL, adj, square
+from .walks import TOL, adj, square, _exponential_action
 
 
 def density_matrix(matrix: ArrayLike) -> np.ndarray:
@@ -26,12 +25,15 @@ def density_matrix(matrix: ArrayLike) -> np.ndarray:
 
 
 def liouvillian(
-    hamiltonian: ArrayLike, collapse: Iterable[ArrayLike] = (), *, representation: str="dense"
+    hamiltonian: ArrayLike,
+    collapse: Iterable[ArrayLike] = (),
+    *,
+    representation: str = "dense",
 ):
-    if representation in ("sparse","matrix-free"):
-        h,parts=_parts(hamiltonian,collapse)
-        return _generator(h,parts,representation=="sparse")
-    if representation!="dense":
+    if representation in ("sparse", "matrix-free"):
+        h, parts = _parts(hamiltonian, collapse)
+        return _generator(h, parts, representation == "sparse")
+    if representation != "dense":
         raise ValueError("unknown Liouvillian representation")
     h = square(hamiltonian)
     if not np.allclose(h, adj(h), atol=1e-12, rtol=0):
@@ -49,33 +51,47 @@ def liouvillian(
     return generator
 
 
-def _parts(h,collapse):
-    h=sparse.csr_matrix(h,dtype=complex)
-    if not h.shape[0] or h.shape[0]!=h.shape[1] or not np.isfinite(h.data).all() or np.max(abs((h-h.getH()).data),initial=0)>1e-12:
+def _parts(h, collapse):
+    h = sparse.csr_matrix(h, dtype=complex)
+    if (
+        not h.shape[0]
+        or h.shape[0] != h.shape[1]
+        or not np.isfinite(h.data).all()
+        or np.max(abs((h - h.getH()).data), initial=0) > 1e-12
+    ):
         raise ValueError("invalid Hamiltonian")
-    channels=[sparse.csr_matrix(c,dtype=complex) for c in collapse]
-    if any(c.shape!=h.shape or not np.isfinite(c.data).all() for c in channels):
+    channels = [sparse.csr_matrix(c, dtype=complex) for c in collapse]
+    if any(c.shape != h.shape or not np.isfinite(c.data).all() for c in channels):
         raise ValueError("invalid collapse operator")
-    return h,[(c,c.getH(),c.getH()@c) for c in channels]
+    return h, [(c, c.getH(), c.getH() @ c) for c in channels]
 
 
-def _generator(h,parts,explicit):
-    n=h.shape[0]
+def _generator(h, parts, explicit):
+    n = h.shape[0]
     if explicit:
-        eye=sparse.eye(n)
-        def kron(a,b):
-            return sparse.kron(a,b,format="csr")
-        g=-1j*(kron(eye,h)-kron(h.T,eye))
-        for c,cd,r in parts:
-            g+=kron(c.conj(),c)-.5*(kron(eye,r)+kron(r.T,eye))
+        eye = sparse.eye(n)
+
+        def kron(a, b):
+            return sparse.kron(a, b, format="csr")
+
+        g = -1j * (kron(eye, h) - kron(h.T, eye))
+        for c, cd, r in parts:
+            g += kron(c.conj(), c) - 0.5 * (kron(eye, r) + kron(r.T, eye))
         return g
-    def apply(vector,dual):
-        x=vector.reshape((n,n),order="F")
-        y=(1j if dual else -1j)*(h@x-x@h)
-        for c,cd,r in parts:
-            y+=(cd@x@c if dual else c@x@cd)-.5*(r@x+x@r)
+
+    def apply(vector, dual):
+        x = vector.reshape((n, n), order="F")
+        y = (1j if dual else -1j) * (h @ x - x @ h)
+        for c, cd, r in parts:
+            y += (cd @ x @ c if dual else c @ x @ cd) - 0.5 * (r @ x + x @ r)
         return y.ravel(order="F")
-    return LinearOperator((n*n,n*n),matvec=lambda v:apply(v,False),rmatvec=lambda v:apply(v,True),dtype=complex)
+
+    return LinearOperator(
+        (n * n, n * n),
+        matvec=lambda v: apply(v, False),
+        rmatvec=lambda v: apply(v, True),
+        dtype=complex,
+    )
 
 
 class OpenEvolution(NamedTuple):
@@ -85,6 +101,11 @@ class OpenEvolution(NamedTuple):
     trace_error: np.ndarray
     hermiticity_error: np.ndarray
     minimum_eigenvalue: np.ndarray
+
+    def violations(self,tol: float=TOL) -> np.ndarray:
+        if not np.isfinite(tol) or tol<0:
+            raise ValueError("invalid physicality tolerance")
+        return (~np.isfinite(self.states).all(axis=(1,2)) | (self.trace_error>tol) | (self.hermiticity_error>tol) | (self.minimum_eigenvalue< -tol))
 
 
 def evolve_density(
@@ -97,7 +118,7 @@ def evolve_density(
     atol: float = 1e-11,
 ) -> OpenEvolution:
     rho = density_matrix(initial)
-    h,parts=_parts(hamiltonian,collapse)
+    h, parts = _parts(hamiltonian, collapse)
     t = np.asarray(times, float)
     if (
         h.shape != rho.shape
@@ -112,14 +133,19 @@ def evolve_density(
         raise ValueError("invalid solver tolerances")
     x = rho.flatten(order="F")
     if method == "expm":
-        g=liouvillian(h.toarray(),[c.toarray() for c,_,_ in parts])
-        vectors = np.array([expm(s * g) @ x for s in t])
-    elif method in ("sparse","matrix-free"):
-        op=_generator(h,parts,method=="sparse")
-        trace=sum(abs(c.diagonal().sum())**2-h.shape[0]*r.diagonal().sum() for c,_,r in parts)
-        vectors=np.array([expm_multiply(s*op,x,traceA=s*trace) if s else x for s in t])
-    elif method in ("ode","bdf"):
-        op=_generator(h,parts,method=="bdf")
+        g = liouvillian(h.toarray(), [c.toarray() for c, _, _ in parts])
+        vectors = np.array([_exponential_action(s*g,x) for s in t])
+    elif method in ("sparse", "matrix-free"):
+        op = _generator(h, parts, method == "sparse")
+        trace = sum(
+            abs(c.diagonal().sum()) ** 2 - h.shape[0] * r.diagonal().sum()
+            for c, _, r in parts
+        )
+        vectors = np.array(
+            [expm_multiply(s * op, x, traceA=s * trace) if s else x for s in t]
+        )
+    elif method in ("ode", "bdf"):
+        op = _generator(h, parts, method == "bdf")
         if t[-1] == 0:
             vectors = x[None, :]
         else:
@@ -130,8 +156,8 @@ def evolve_density(
                 t_eval=t,
                 rtol=rtol,
                 atol=atol,
-                method="BDF" if method=="bdf" else "DOP853",
-                **({"jac":op} if method=="bdf" else {}),
+                method="BDF" if method == "bdf" else "DOP853",
+                **({"jac": op} if method == "bdf" else {}),
             )
             if not sol.success:
                 raise RuntimeError(sol.message)

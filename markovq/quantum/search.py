@@ -25,41 +25,67 @@ class SearchResult(NamedTuple):
 
     log_success: Optional[np.ndarray] = None
 
-    def cost_status(self,index: int) -> str:
+    def cost_status(self, index: int) -> str:
         from ..chains import state
-        i=state(index,len(self.candidates))
-        p=float(self.success[i])
-        if not np.isfinite(p) or p<0 or p>1+16*np.finfo(float).eps:
-            raise ValueError("invalid probability")
-        if p==0:
-            return "probability-underflow" if self.log_success is not None and np.isfinite(self.log_success[i]) else "zero-represented"
-        return "reciprocal-overflow" if p < 1/np.finfo(float).max else "finite"
 
-    def expected_cost(self,index: int) -> dict[str,float]:
-        status=self.cost_status(index)
-        p=min(1.,float(self.success[index]))
-        logp=float(self.log_success[index]) if status=="probability-underflow" else -np.inf
+        i = state(index, len(self.candidates))
+        p = float(self.success[i])
+        if not np.isfinite(p) or p < 0 or p > 1 + 16 * np.finfo(float).eps:
+            raise ValueError("invalid probability")
+        if self.log_success is not None:
+            logged=float(self.log_success[i])
+            if np.isnan(logged) or logged>16*np.finfo(float).eps or (p==0 and np.exp(logged)>0):
+                raise ValueError("invalid log probability")
+        if p == 0:
+            return (
+                "probability-underflow"
+                if self.log_success is not None and np.isfinite(self.log_success[i])
+                else "zero-represented"
+            )
+        return "reciprocal-overflow" if p < 1 / np.finfo(float).max else "finite"
+
+    def expected_cost(self, index: int) -> dict[str, float]:
+        status = self.cost_status(index)
+        p = min(1.0, float(self.success[index]))
+        logp = (
+            float(self.log_success[index])
+            if status == "probability-underflow" and self.log_success is not None
+            else -np.inf
+        )
+
         def cost(per_trial):
-            value=float(per_trial)
-            if not np.isfinite(value) or value<0:
+            value = float(per_trial)
+            if not np.isfinite(value) or value < 0:
                 raise ValueError("invalid per-trial resource")
-            if value==0:
-                return 0.
+            if value == 0:
+                return 0.0
             if p:
-                return value/p
-            exponent=np.log(value)-logp
-            return np.inf if exponent>np.log(np.finfo(float).max) else float(np.exp(exponent))
-        return {"independent_trials":cost(1),"initial_preparations":cost(self.preparations_per_trial),"final_measurements":cost(self.measurements_per_trial),"marking_queries":cost(self.discrete_queries[index]),"analog_oracle_time":cost(self.oracle_time[index])}
+                return value / p
+            exponent = np.log(value) - logp
+            return (
+                np.inf
+                if exponent > np.log(np.finfo(float).max)
+                else float(np.exp(exponent))
+            )
+
+        return {
+            "independent_trials": cost(1),
+            "initial_preparations": cost(self.preparations_per_trial),
+            "final_measurements": cost(self.measurements_per_trial),
+            "marking_queries": cost(self.discrete_queries[index]),
+            "analog_oracle_time": cost(self.oracle_time[index]),
+        }
 
 
 def _probabilities(amplitudes):
     from scipy.special import logsumexp
-    logs=[]
+
+    logs = []
     for v in amplitudes:
-        magnitudes=abs(v)
-        nonzero=magnitudes[magnitudes>0]
-        logs.append(logsumexp(2*np.log(nonzero)) if nonzero.size else -np.inf)
-    return np.exp(logs),np.array(logs)
+        magnitudes = abs(v)
+        nonzero = magnitudes[magnitudes > 0]
+        logs.append(logsumexp(2 * np.log(nonzero)) if nonzero.size else -np.inf)
+    return np.exp(logs), np.array(logs)
 
 
 def discrete_search(
@@ -73,9 +99,17 @@ def discrete_search(
     if not times.size:
         raise ValueError("empty candidate set")
     search = u @ (np.eye(len(u)) - 2 * p)
-    success,logs=_probabilities(p@np.linalg.matrix_power(search,t)@v for t in times)
-    return SearchResult(times,success,int(success.argmax()),times.copy(),np.zeros(len(times)),log_success=logs)
-
+    success, logs = _probabilities(
+        p @ np.linalg.matrix_power(search, t) @ v for t in times
+    )
+    return SearchResult(
+        times,
+        success,
+        int(success.argmax()),
+        times.copy(),
+        np.zeros(len(times)),
+        log_success=logs,
+    )
 
 
 def coined_search(
@@ -122,9 +156,12 @@ def continuous_search(
     if t.ndim != 1 or not len(t) or not np.isfinite(t).all() or t.min() < 0:
         raise ValueError("invalid candidate times")
     h = -gamma * a - p
-    prob,logs=_probabilities(p@continuous_walk(h,initial,x,"spectral") for x in t)
-    return SearchResult(t,prob,int(prob.argmax()),np.zeros(len(t),int),t.copy(),log_success=logs)
-
+    prob, logs = _probabilities(
+        p @ continuous_walk(h, initial, x, "spectral") for x in t
+    )
+    return SearchResult(
+        t, prob, int(prob.argmax()), np.zeros(len(t), int), t.copy(), log_success=logs
+    )
 
 
 def classical_search(

@@ -137,6 +137,24 @@ def graph_walk(adjacency: ArrayLike, coins: Optional[list] = None) -> CoinedWalk
     )
 
 
+def _exponential_action(a: np.ndarray,v: np.ndarray) -> np.ndarray:
+    import platform
+
+    import scipy
+
+    if (
+        platform.system() == "Darwin"
+        and platform.machine() == "arm64"
+        and np.__version__ == "2.0.2"
+        and scipy.__version__ == "1.13.1"
+    ):
+        from scipy.sparse import csc_matrix
+        from scipy.sparse.linalg import expm
+
+        return expm(csc_matrix(a)) @ v
+    return np.einsum("ij,j->i",linalg.expm(a),v)
+
+
 def continuous_walk(
     hamiltonian: MatrixInput, initial: ArrayLike, time: float, method: str = "krylov"
 ) -> np.ndarray:
@@ -148,16 +166,12 @@ def continuous_walk(
         return expm_multiply((-1j * time) * h, v)
     a = h if isinstance(h, np.ndarray) else h.toarray()
     if method == "dense":
-        import platform
-        import scipy
-        if platform.system()=="Darwin" and platform.machine()=="arm64" and np.__version__=="2.0.2" and scipy.__version__=="1.13.1":
-            from scipy.sparse import csc_matrix
-            from scipy.sparse.linalg import expm
-            return expm(csc_matrix(-1j*time*a))@v
-        return linalg.expm(-1j * time * a) @ v
+        return _exponential_action(-1j*time*a,v)
     if method == "spectral":
         w, b = linalg.eigh(a)
-        return np.einsum("ij,j->i",b,np.exp(-1j*time*w)*np.einsum("ij,i->j",b.conj(),v))
+        return np.einsum(
+            "ij,j->i", b, np.exp(-1j * time * w) * np.einsum("ij,i->j", b.conj(), v)
+        )
     raise ValueError("method must be krylov, dense or spectral")
 
 
@@ -170,16 +184,20 @@ class SzegedyWalk(NamedTuple):
     discriminant: np.ndarray
 
     def coherent(self, law: ArrayLike) -> np.ndarray:
-        return self.A @ np.sqrt(distribution(law, self.A.shape[1]))
+        return np.einsum("ij,j->i", self.A, np.sqrt(distribution(law, self.A.shape[1])))
 
 
 def szegedy(
-    transition: MatrixInput, reverse: Optional[MatrixInput] = None, *, max_bytes: int = 512*1024**2
+    transition: MatrixInput,
+    reverse: Optional[MatrixInput] = None,
+    *,
+    max_bytes: int = 512 * 1024**2,
 ) -> SzegedyWalk:
     """B uses swap-embedded rows of reverse, defaulting to P (swap construction)."""
     from .implicit import dense_szegedy_bytes
-    shape=np.shape(transition)
-    if len(shape)==2 and dense_szegedy_bytes(shape[0])>max_bytes:
+
+    shape = np.shape(transition)
+    if len(shape) == 2 and dense_szegedy_bytes(shape[0]) > max_bytes:
         raise MemoryError("dense Szegedy budget exceeded; use implicit_szegedy")
     p = dense(transition)
     q = p if reverse is None else dense(reverse)
@@ -191,6 +209,6 @@ def szegedy(
     for i in range(n):
         a[i * n : (i + 1) * n, i] = np.sqrt(p[i])
         b[i::n, i] = np.sqrt(q[i])
-    ra = 2 * a @ a.T - np.eye(n * n)
-    rb = 2 * b @ b.T - np.eye(n * n)
-    return SzegedyWalk(a, b, ra, rb, rb @ ra, a.T @ b)
+    ra = linalg.blas.dgemm(2.,a,a,trans_b=True) - np.eye(n*n)
+    rb = linalg.blas.dgemm(2.,b,b,trans_b=True) - np.eye(n*n)
+    return SzegedyWalk(a, b, ra, rb, linalg.blas.dgemm(1.,rb,ra), linalg.blas.dgemm(1.,a,b,trans_a=True))
