@@ -97,3 +97,14 @@ def occupation_times(paths,states):
     if x.ndim!=2:
         raise ValueError("expected a path matrix")
     return np.column_stack([(x==i).sum(axis=1) for i in states])
+
+
+def increment_walk(increments, probabilities, steps, paths=1, seed=None, initial=0.):
+    """Sample real iid increments from a finite distribution on the line."""
+    from .chains import distribution
+    support = np.asarray(increments, dtype=float)
+    if support.ndim != 1 or not support.size or not np.isfinite(support).all() or not np.isfinite(initial):
+        raise ValueError("expected finite real increments and origin")
+    rng = np.random.default_rng(seed)
+    draws = rng.choice(support, (count(paths), count(steps)), p=distribution(probabilities,len(support)))
+    return initial+np.column_stack((np.zeros(paths),draws.cumsum(axis=1)))

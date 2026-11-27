@@ -201,3 +201,30 @@ def test_multiple_targets_and_initial_censoring():
     t,c=empirical_passage([[1,0,0],[0,1,0]],[1],True)
     close(t,[2,1])
     close(c,[True,False])
+
+
+def test_increment_walk():
+    from markovq.walks import increment_walk
+    close(increment_walk([2],[1],3,2,initial=-1),[[-1,1,3,5]]*2)
+    with pytest.raises(ValueError):
+        increment_walk([],[],2)
+
+
+@pytest.mark.parametrize("right",[.2,.4,.6,.8])
+def test_biased_ruin(right):
+    b=6
+    i=np.arange(1,b)
+    r=(1-right)/right
+    exact=(1-r**i)/(1-r**b)
+    a=m.absorption(m.line_walk(b+1,right,"absorb").P)
+    close(a.probabilities[:,a.classes.index((b,))],exact)
+    close(a.mean,(b*exact-i)/(2*right-1))
+
+
+@pytest.mark.parametrize("size",[3,5,7])
+def test_path_cycle_spectra(size):
+    path=np.diag(np.ones(size-1),1)+np.diag(np.ones(size-1),-1)
+    vals=2*np.cos(np.arange(1,size+1)*np.pi/(size+1))
+    close(m.spectrum(path).values,np.sort(vals),atol=1e-12)
+    path[0,-1]=path[-1,0]=1
+    close(m.spectrum(path).values,np.sort(2*np.cos(2*np.pi*np.arange(size)/size)),atol=1e-12)
