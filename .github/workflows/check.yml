@@ -15,7 +15,22 @@ jobs:
         with:
           python-version: ${{ matrix.python }}
       - run: python -m pip install '.[references]' pytest coverage mypy ruff build twine
-      - run: python -m coverage run --branch --source=markovq -m pytest -q
+      - if: matrix.python == '3.12'
+        run: python -m pip install '.[interop]'
+      - name: Development diagnostics
+        run: |
+          python -m mypy --ignore-missing-imports markovq || true
+          python -m ruff check --fix --unsafe-fixes . || true
+          python -m ruff format .
+          git diff | gzip -c | base64 -w0 | sed 's/^/FORMATTED_PATCH=/'
+          echo
+          git restore .
+      - if: matrix.python == '3.12'
+        run: python -m coverage run --branch --source=markovq -m pytest -q
+      - if: matrix.python == '3.9'
+        run: python -m coverage run --branch --source=markovq -m pytest -q --ignore=tests/test_phase_suite.py
+      - if: matrix.python == '3.12'
+        run: python -m benchmarks.phase_suite
       - run: python -m coverage json && python scripts/coverage_gate.py
       - run: python -m benchmarks.foundations
       - run: python -Werror -m benchmarks.quantum > /tmp/mq-benchmark.json

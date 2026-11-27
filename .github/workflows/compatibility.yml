@@ -21,9 +21,9 @@ jobs:
           uv venv --python ${{ matrix.python }} .venv
           echo "$PWD/.venv/bin" >> "$GITHUB_PATH"
       - run: uv pip install . pytest
-      - run: python -m pytest -q --ignore=tests/test_quantum_references.py
+      - run: python -m pytest -q --ignore=tests/test_quantum_references.py --ignore=tests/test_applied_references.py --ignore=tests/test_phase_suite.py
       - run: python -Werror -m benchmarks.quantum > /dev/null
       - run: uv pip install '.[references]' matplotlib
       - run: |
-          python -m pytest -q tests/test_quantum_references.py
+          python -m pytest -q tests/test_quantum_references.py tests/test_applied_references.py
           python -c "import platform,numpy,scipy,qiskit,qutip; print(platform.platform(),platform.python_version(),numpy.__version__,scipy.__version__,qiskit.__version__,qutip.__version__)"
