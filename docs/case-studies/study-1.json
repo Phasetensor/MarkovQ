@@ -1,0 +1,53 @@
+{
+  "baseline": "classical exact MSD = n",
+  "input_sha256": "62f863a61e16f933bd773b8ed35b038d8e94a530321ac33133614f48c9434d98",
+  "inputs": {
+    "boundaries": "reachable light cone",
+    "dataset": "synthetic",
+    "graph": "integer line",
+    "initial_state": "origin, symmetric complex coin"
+  },
+  "limitations": "Specific initial coin and unbiased steps.",
+  "model": "Line spreading",
+  "peak_rss_bytes": 108003328,
+  "protocol": "terminal position",
+  "results": {
+    "rows": [
+      {
+        "classical_msd": 8,
+        "quantum_msd": 19.124999999999964,
+        "steps": 8
+      },
+      {
+        "classical_msd": 16,
+        "quantum_msd": 75.40722656249976,
+        "steps": 16
+      },
+      {
+        "classical_msd": 32,
+        "quantum_msd": 300.3809180557711,
+        "steps": 32
+      },
+      {
+        "classical_msd": 64,
+        "quantum_msd": 1200.1705207486948,
+        "steps": 64
+      },
+      {
+        "classical_msd": 128,
+        "quantum_msd": 4799.257361888328,
+        "steps": 128
+      }
+    ]
+  },
+  "runtime_s": 0.0013825000000000642,
+  "schema": 2,
+  "seed": 0,
+  "solver": "coined shift",
+  "tolerance": 1e-10,
+  "versions": {
+    "numpy": "2.0.2",
+    "python": "3.9.6",
+    "scipy": "1.13.1"
+  }
+}

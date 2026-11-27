@@ -1,0 +1,39 @@
+# Numerical stability of modules 13–20
+
+## Phase resolution and detection
+
+For a finite unitary U and a fixed target projector Π, the exact dark space is the direct sum, over **distinct** eigenvalues, of ker(Π) intersected with their eigenspaces. The dimension can jump discontinuously under arbitrarily small perturbations. A floating-point matrix cannot certify exact algebraic multiplicities of the model that produced it.
+
+The complex Schur basis is orthonormal. Sorting phases around the circle and cutting at adjacent chord gaps greater than the threshold yields order-independent connected components, including groups that straddle −π and π. Single-linkage may join the ends of a chain separated by more than one threshold. The public phase_spaces returns numerical clusters at the requested resolution.
+
+eventual_detection accepts separate keyword arguments phase_tol, rank_tol and solver_tol. The old positional tol sets the two clustering defaults. The central model resolves chords and projection singular values down to the smaller of the chosen tolerance and 8dε. The code repeats the projection at the requested tolerance, four times that tolerance, and at two machine-scale resolutions. Each rank uses the SVD of the target applied to the whole candidate eigenspace. It measures the commutator of U with the dark projector and the norm of Π on that projector. For isolated modes it also compares a discarded positive coupling to componentwise product error and eigenvector residual divided by spectral separation. These are numerical diagnostics. The range of probabilities across models is a sensitivity range, not a statistical interval or rigorous upper and lower bound for an unknown exact model.
+
+A rank change, material probability change or inconsistent dark subspace yields tolerance-sensitive status and NaN for the reported eventual probability and conditional mean. The central candidate projector remains available for inspection. A stable outcome is labeled resolved-at-precision. Weak couplings beneath backward error remain unidentifiable.
+
+## Finite and infinite-time mixing
+
+For coefficients ψⱼ in the Schur basis, the finite-time reference multiplies cross terms by exp(i(T−1)θ/2) sinc(Tθ/2π)/sinc(θ/2π), with θ the relative phase reduced on the unit circle. Its diagonal limit at θ=0 is one. The returned finite_spectral and the direct iteration average use observations 0,…,T−1. The central limiting_average retains cross terms inside each selected eigenspace. Both the change under looser grouping and the change under splitting distinct represented eigenvalues inside numerical resolution are reported as TV distances. Inspect spectral_status before interpreting limiting_average. If a gap shrinks while T stays fixed, interference can persist even when a mathematically nonzero gap would dephase in the infinite-time limit. Equal floating-point eigenvalues carry no information about hidden splitting.
+
+## Conditional duration
+
+On the bright restriction C of (I−Π)U, duration X solves X−C†XC=I. Normalizing the initial bright projection before evaluating its quadratic form avoids dividing two tiny squared norms. A positive dark weight makes the unconditional expectation infinite for the resolved model. Zero detection probability makes the conditional mean undefined. Indeterminate classification or insufficient solver accuracy returns unresolved and NaN.
+
+The diagnostics include ρ(C), a condition estimate, a scaled equation residual, relative Hermiticity error and the smallest eigenvalue of the Hermitian part of X. For stable C, the inverse Lyapunov map is positive and its induced norm on Hermitian matrices with spectral norm equals ‖X‖. Multiplication by 1+‖C‖² gives a condition bound for the exact solution; the reported value substitutes the computed X. It is an estimate. A tiny backward residual can coexist with a large forward error. The solver rejects radii within four machine epsilons of unity, nonfinite or sub-unit expectations beyond tolerance, positivity failures and excessive condition-amplified backward error. It uses a direct solve on small restrictions and a bilinear solve otherwise. The solver_tol checks estimated accuracy, not mathematical finiteness. A finite value from an independent high-precision model may be beyond the reliable range of the double-precision solver. [SciPy solver reference](https://docs.scipy.org/doc/scipy/reference/generated/scipy.linalg.solve_discrete_lyapunov.html)
+
+## Sparse evolution
+
+implicit_szegedy validates both kernels and stores their square-root embeddings in CSC format. Applying the two reflections takes O(n²+nnz(P)+nnz(Q)) time and storage including state work arrays. The adjoint reverses reflection order. Dense szegedy remains the small reference. Its default 512 MiB budget uses a conservative array-storage estimate before constructing the embeddings and reflections. The estimate excludes allocator, BLAS and interpreter overhead. Applications can set max_bytes explicitly.
+
+liouvillian accepts dense, sparse and matrix-free representations. evolve_density provides dense exponential, sparse exponential action, matrix-free exponential action, matrix-form DOP853 and sparse-Jacobian BDF. Right-hand sides and adjoints use column-major vectorization. Exponential actions receive the superoperator trace analytically. Each matrix-form operation retains a d×d density matrix, including the cost of storing all requested output states. Sparse Kronecker products may still fill in. Expanding a sparse input to a dense generator occurs only on the requested dense path.
+
+DOP853 is explicit and suited to nonstiff evolution. BDF handles complex-linear stiff dynamics using the sparse constant Jacobian. The regression with two collapse operators and decay rate 64 compares both with the exponential. Solver choice depends on rate separation, requested times and tolerance. Raw trace, Hermiticity and minimum-eigenvalue diagnostics are returned; violations(tol) flags output times. Values are never projected or renormalized.
+
+## Search resources
+
+Each candidate records a represented success probability and, when computed from amplitudes, its log probability. The latter is formed before squaring can underflow. cost_status distinguishes finite, reciprocal-overflow, represented zero, and positive probabilities lost on exponentiation. Exact zero and a probability lost before any nonzero amplitude reaches this routine are indistinguishable without external model information. expected_cost retains its previous keys and adds independent_trials, respecting declared preparations and measurements per trial. Every resource is divided separately, so zero exposure is still zero when trials diverge. resource_status identifies overflow per category and marks gate count, wall time and hardware cost unmeasured. A probability slightly above one from rounding is accepted within 16 epsilons and treated as one. Invalid probabilities, nonfinite costs, negative resources and invalid indices raise.
+
+## Compatibility of results
+
+Existing calls and named attributes are preserved. EventualDetection and Mixing have additional tuple fields, and SearchResult has an optional log_success field. Code unpacking a fixed number of tuple elements should use named attributes. Unresolved detection now returns NaN with a diagnostic. A dense Szegedy allocation beyond the new budget raises MemoryError before allocation.
+
+An exactly disconnected invariant coordinate block can certify positive non-detection even when its probability cannot be squared in floating point. Inspect diagnostics.unconditional_status separately from mean_status. In dense rotated models the projection can be comparable to its numerical uncertainty. Such an expectation can remain unresolved. Search candidates use first maximum in the log domain, including when all ordinary positive probabilities have underflowed. See [final remediation](final-remediation.md).

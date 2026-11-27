@@ -1,0 +1,327 @@
+{
+  "baseline": "degree and one-step walk",
+  "input_sha256": "24b38bc1d61de8c1ea661d8ba7caacbce2e7d712368bdd3c88f3d3d22e807148",
+  "inputs": {
+    "boundaries": "finite",
+    "dataset": "PDB 1CRN, chain A",
+    "graph": "8 angstrom C-alpha contacts",
+    "initial_state": "four helix-1 seed residues"
+  },
+  "limitations": "Single plant protein, structurally correlated annotation, fixed graph, no independent biological discovery.",
+  "model": "Biological network ranking",
+  "peak_rss_bytes": 111067136,
+  "protocol": "held-out helix 2, negatives from residues >=22",
+  "results": {
+    "community_labels": [
+      1,
+      1,
+      1,
+      1,
+      1,
+      1,
+      1,
+      -1,
+      -1,
+      -1,
+      -1,
+      -1,
+      -1,
+      -1,
+      -1,
+      -1,
+      -1,
+      -1,
+      -1,
+      -1,
+      -1,
+      -1,
+      -1,
+      -1,
+      -1,
+      -1,
+      -1,
+      -1,
+      -1,
+      -1,
+      -1,
+      1,
+      1,
+      1,
+      1,
+      1,
+      1,
+      1,
+      1,
+      1,
+      1,
+      1,
+      1,
+      1,
+      1,
+      1
+    ],
+    "community_method": "fiedler-sign",
+    "dataset": "PDB 1CRN, crambin, chain A",
+    "edges": 203,
+    "input_sha256": "6353d769f25794aafab9f211466a85aa34e3217d9a8f3353c3b3f1c68e3b12c1",
+    "mean_pairwise_spearman": {
+      "degree": 1.0,
+      "heat": 0.87148903424394,
+      "one_step": 0.3546743192349441,
+      "quantum": 0.7847633705271259,
+      "restart_pagerank": 0.8933000199768172
+    },
+    "negative_test_residues": [
+      22,
+      31,
+      32,
+      33,
+      34,
+      35,
+      36,
+      37,
+      38,
+      39,
+      40,
+      41,
+      42,
+      43,
+      44,
+      45,
+      46
+    ],
+    "nodes": 46,
+    "positive_test_residues": [
+      23,
+      24,
+      25,
+      26,
+      27,
+      28,
+      29,
+      30
+    ],
+    "trials": [
+      {
+        "metrics": {
+          "degree": {
+            "auroc": 0.6433823529411765,
+            "average_precision": 0.44586074561403505,
+            "precision_at_k": 0.44000000000000006,
+            "recall_at_k": 0.275
+          },
+          "heat": {
+            "auroc": 0.9411764705882353,
+            "average_precision": 0.7713789682539682,
+            "precision_at_k": 0.8,
+            "recall_at_k": 0.5
+          },
+          "one_step": {
+            "auroc": 0.6617647058823529,
+            "average_precision": 0.5125,
+            "precision_at_k": 0.6476190476190476,
+            "recall_at_k": 0.40476190476190477
+          },
+          "quantum": {
+            "auroc": 0.8970588235294118,
+            "average_precision": 0.7116452991452993,
+            "precision_at_k": 0.8,
+            "recall_at_k": 0.5
+          },
+          "restart_pagerank": {
+            "auroc": 0.9191176470588235,
+            "average_precision": 0.7823412698412698,
+            "precision_at_k": 0.8,
+            "recall_at_k": 0.5
+          }
+        },
+        "rng_seed": 501,
+        "runtime_s": 0.006035666999999911,
+        "seed_residues": [
+          12,
+          15,
+          17,
+          19
+        ]
+      },
+      {
+        "metrics": {
+          "degree": {
+            "auroc": 0.6433823529411765,
+            "average_precision": 0.44586074561403505,
+            "precision_at_k": 0.44000000000000006,
+            "recall_at_k": 0.275
+          },
+          "heat": {
+            "auroc": 0.75,
+            "average_precision": 0.5557276057276057,
+            "precision_at_k": 0.4,
+            "recall_at_k": 0.25
+          },
+          "one_step": {
+            "auroc": 0.5036764705882353,
+            "average_precision": 0.3216666666666667,
+            "precision_at_k": 0.32727272727272727,
+            "recall_at_k": 0.20454545454545453
+          },
+          "quantum": {
+            "auroc": 0.7352941176470589,
+            "average_precision": 0.48952991452991446,
+            "precision_at_k": 0.4,
+            "recall_at_k": 0.25
+          },
+          "restart_pagerank": {
+            "auroc": 0.7352941176470589,
+            "average_precision": 0.5116258741258741,
+            "precision_at_k": 0.4,
+            "recall_at_k": 0.25
+          }
+        },
+        "rng_seed": 502,
+        "runtime_s": 0.0032112079999999654,
+        "seed_residues": [
+          8,
+          9,
+          11,
+          19
+        ]
+      },
+      {
+        "metrics": {
+          "degree": {
+            "auroc": 0.6433823529411765,
+            "average_precision": 0.44586074561403505,
+            "precision_at_k": 0.44000000000000006,
+            "recall_at_k": 0.275
+          },
+          "heat": {
+            "auroc": 0.7573529411764706,
+            "average_precision": 0.5739125457875458,
+            "precision_at_k": 0.4,
+            "recall_at_k": 0.25
+          },
+          "one_step": {
+            "auroc": 0.48161764705882354,
+            "average_precision": 0.3425,
+            "precision_at_k": 0.26666666666666666,
+            "recall_at_k": 0.16666666666666666
+          },
+          "quantum": {
+            "auroc": 0.7058823529411765,
+            "average_precision": 0.5222988816738817,
+            "precision_at_k": 0.2,
+            "recall_at_k": 0.125
+          },
+          "restart_pagerank": {
+            "auroc": 0.7352941176470589,
+            "average_precision": 0.5138888888888888,
+            "precision_at_k": 0.4,
+            "recall_at_k": 0.25
+          }
+        },
+        "rng_seed": 503,
+        "runtime_s": 0.0033552079999998874,
+        "seed_residues": [
+          9,
+          10,
+          11,
+          15
+        ]
+      },
+      {
+        "metrics": {
+          "degree": {
+            "auroc": 0.6433823529411765,
+            "average_precision": 0.44586074561403505,
+            "precision_at_k": 0.44000000000000006,
+            "recall_at_k": 0.275
+          },
+          "heat": {
+            "auroc": 0.8823529411764706,
+            "average_precision": 0.6830357142857144,
+            "precision_at_k": 0.8,
+            "recall_at_k": 0.5
+          },
+          "one_step": {
+            "auroc": 0.47058823529411764,
+            "average_precision": 0.32,
+            "precision_at_k": 0.26666666666666666,
+            "recall_at_k": 0.16666666666666666
+          },
+          "quantum": {
+            "auroc": 0.7279411764705882,
+            "average_precision": 0.46187839937839936,
+            "precision_at_k": 0.2,
+            "recall_at_k": 0.125
+          },
+          "restart_pagerank": {
+            "auroc": 0.8308823529411765,
+            "average_precision": 0.643522102897103,
+            "precision_at_k": 0.6,
+            "recall_at_k": 0.375
+          }
+        },
+        "rng_seed": 504,
+        "runtime_s": 0.003038582999999928,
+        "seed_residues": [
+          7,
+          15,
+          18,
+          19
+        ]
+      },
+      {
+        "metrics": {
+          "degree": {
+            "auroc": 0.6433823529411765,
+            "average_precision": 0.44586074561403505,
+            "precision_at_k": 0.44000000000000006,
+            "recall_at_k": 0.275
+          },
+          "heat": {
+            "auroc": 0.9264705882352942,
+            "average_precision": 0.7481150793650794,
+            "precision_at_k": 0.8,
+            "recall_at_k": 0.5
+          },
+          "one_step": {
+            "auroc": 0.5735294117647058,
+            "average_precision": 0.4275,
+            "precision_at_k": 0.45714285714285713,
+            "recall_at_k": 0.2857142857142857
+          },
+          "quantum": {
+            "auroc": 0.7941176470588235,
+            "average_precision": 0.5656520562770563,
+            "precision_at_k": 0.4,
+            "recall_at_k": 0.25
+          },
+          "restart_pagerank": {
+            "auroc": 0.8823529411764706,
+            "average_precision": 0.7176948051948052,
+            "precision_at_k": 0.6,
+            "recall_at_k": 0.375
+          }
+        },
+        "rng_seed": 505,
+        "runtime_s": 0.0030522499999998676,
+        "seed_residues": [
+          10,
+          15,
+          16,
+          19
+        ]
+      }
+    ]
+  },
+  "runtime_s": 0.03850020899999995,
+  "schema": 2,
+  "seed": 501,
+  "solver": "restart, diffusion, CTQW",
+  "tolerance": 1e-10,
+  "versions": {
+    "numpy": "2.0.2",
+    "python": "3.9.6",
+    "scipy": "1.13.1"
+  }
+}

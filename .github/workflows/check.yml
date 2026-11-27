@@ -1,0 +1,53 @@
+name: MarkovQ scientific validation
+on: [push, pull_request]
+permissions:
+  contents: read
+jobs:
+  scientific:
+    runs-on: ubuntu-22.04
+    strategy:
+      fail-fast: false
+      matrix:
+        python: ['3.9', '3.12']
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python }}
+      - run: python -m pip install '.[references]' pytest coverage mypy ruff build twine
+      - if: matrix.python == '3.12'
+        run: python -m pip install '.[interop]'
+      - if: matrix.python == '3.12'
+        run: python -Werror -m benchmarks.applied /tmp/markovq-studies
+      - if: matrix.python == '3.12'
+        uses: actions/upload-artifact@v4
+        with:
+          name: applied-scientific-studies
+          path: /tmp/markovq-studies
+      - if: matrix.python == '3.12'
+        run: python -m coverage run --branch --source=markovq -m pytest -q
+      - if: matrix.python == '3.9'
+        run: python -m coverage run --branch --source=markovq -m pytest -q --ignore=tests/test_phase_suite.py
+      - if: matrix.python == '3.12'
+        run: python -m benchmarks.phase_suite
+      - run: python -m coverage json && python scripts/coverage_gate.py
+      - run: python -m benchmarks.foundations
+      - run: python -Werror -m benchmarks.quantum > /tmp/mq-benchmark.json
+      - uses: actions/upload-artifact@v4
+        with:
+          name: quantum-benchmark-python-${{ matrix.python }}
+          path: /tmp/mq-benchmark.json
+      - run: python -m ruff check .
+      - run: python -m ruff format --check --diff .
+      - run: python -m mypy --ignore-missing-imports markovq
+      - run: python -m build && python -m twine check --strict dist/* && python scripts/check_dist.py
+      - run: |
+          python -m venv /tmp/markovq-install
+          /tmp/markovq-install/bin/pip install dist/*.whl
+          cd /tmp
+          /tmp/markovq-install/bin/python -c 'from markovq import line_walk, quantum; assert line_walk(3).n == 3 and quantum.cycle_walk(3).operator.shape == (6, 6)'
+      - run: sha256sum dist/* > dist/SHA256SUMS
+      - uses: actions/upload-artifact@v4
+        with:
+          name: distributions-python-${{ matrix.python }}
+          path: dist/

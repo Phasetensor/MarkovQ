@@ -1,0 +1,151 @@
+{
+  "calibration_intervals": {
+    "('false_one', (0,))": [
+      0.012258267972406329,
+      0.03072003268260911
+    ],
+    "('false_one', (1,))": [
+      0.020330485683109627,
+      0.042551402470029046
+    ],
+    "('false_zero', (0,))": [
+      0.04609503542248433,
+      0.07656049040393477
+    ],
+    "('false_zero', (1,))": [
+      0.05497152491916994,
+      0.08761623348928463
+    ]
+  },
+  "circuit": {
+    "addressed_wire_indices": [
+      0,
+      1,
+      2
+    ],
+    "ancillary_qubits": 0,
+    "backend_capacity": null,
+    "compiled_width": 3,
+    "depth": 64,
+    "evidence": "ideal circuit simulation",
+    "logical_qubits": 3,
+    "measurement_count": 3,
+    "physical_qubits_addressed": 3,
+    "provider_jobs": 0,
+    "represented_logical_qubits": 3,
+    "requested_shots": 0,
+    "returned_shots": 0,
+    "runtime_s": 0.017031939999995416,
+    "shots": 0,
+    "two_qubit_gates": 30
+  },
+  "corrected_average_bit_estimator": {
+    "calibration_uncertainty_propagated": false,
+    "domain_status": "outside",
+    "physical_domain": [
+      0,
+      1
+    ],
+    "sampling_standard_error": 0.0026904281313626342,
+    "unconstrained_estimate": 1.0028579138177751
+  },
+  "evidence": "synthetic calibration and simulated sampling",
+  "final_shots": [
+    3957,
+    5979
+  ],
+  "final_successes": [
+    3738,
+    5564
+  ],
+  "ideal": [
+    0,
+    1.0573994819069698e-33,
+    0,
+    0.9999999999999996
+  ],
+  "ideal_average_bit_probability": 0.9999999999999996,
+  "observed": [
+    0.004199999999999998,
+    0.06579999999999996,
+    0.055799999999999975,
+    0.8741999999999996
+  ],
+  "observed_empirical_average_bit_probability": 0.9376227207153265,
+  "pauli_comparisons": {
+    "IIZ": {
+      "confidence": 0.975,
+      "delta": 0.11068991660348748,
+      "interval": [
+        0.04413433590671845,
+        0.17724549730025652
+      ],
+      "mean_a": -1,
+      "mean_b": -0.8893100833965125,
+      "method": "hoeffding",
+      "observable": "IIZ",
+      "shots_a": 3957,
+      "shots_b": 3957,
+      "tolerance": 0.1,
+      "verdict": "inconclusive"
+    },
+    "IZI": {
+      "confidence": 0.975,
+      "delta": 0.13881920053520658,
+      "interval": [
+        0.08467484043334067,
+        0.19296356063707248
+      ],
+      "mean_a": -1,
+      "mean_b": -0.8611807994647934,
+      "method": "hoeffding",
+      "observable": "IZI",
+      "shots_a": 5979,
+      "shots_b": 5979,
+      "tolerance": 0.1,
+      "verdict": "inconclusive"
+    }
+  },
+  "pilot_and_final_budget": 10000,
+  "pilot_shots": [
+    32,
+    32
+  ],
+  "position_distribution_test": {
+    "draws": 10000,
+    "pvalue": 0.00009999000099990002,
+    "seed": 2415,
+    "total_variation": 0.124
+  },
+  "readiness": "READY",
+  "sequential": {
+    "confidence": 0.95,
+    "delta": 0.11068991660348748,
+    "interval": [
+      -0.03240351130146546,
+      0.2537833445084404
+    ],
+    "mean_a": -1,
+    "mean_b": -0.8893100833965125,
+    "method": "sequential_hoeffding",
+    "observable": "IIZ",
+    "shots_a": 3957,
+    "shots_b": 3957,
+    "tolerance": 0.1,
+    "verdict": "inconclusive"
+  },
+  "stability_epochs": {
+    "('model', 'false_one', (0,), None, 'probability', 'fixture', 'synthetic')": 3,
+    "('model', 'false_one', (1,), None, 'probability', 'fixture', 'synthetic')": 3,
+    "('model', 'false_zero', (0,), None, 'probability', 'fixture', 'synthetic')": 3,
+    "('model', 'false_zero', (1,), None, 'probability', 'fixture', 'synthetic')": 3,
+    "('model', 'gate_error', (0, 1), 'cx', 'probability', 'fixture', 'synthetic')": 3
+  },
+  "total_simulated_shots": 39936,
+  "versions": {
+    "bornlens": "0.3.1",
+    "calibmap": "0.1.0",
+    "qiskit": "2.6.2",
+    "shotweave": "0.2.0"
+  }
+}

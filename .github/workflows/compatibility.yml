@@ -1,0 +1,29 @@
+name: Numerical compatibility
+on: [push, pull_request]
+permissions:
+  contents: read
+jobs:
+  matrix:
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-22.04, macos-15]
+        python: ['3.9', '3.10', '3.11', '3.12', '3.13', '3.14']
+    runs-on: ${{ matrix.os }}
+    env:
+      OPENBLAS_NUM_THREADS: '1'
+      OMP_NUM_THREADS: '1'
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@v6
+      - run: |
+          uv python install ${{ matrix.python }}
+          uv venv --python ${{ matrix.python }} .venv
+          echo "$PWD/.venv/bin" >> "$GITHUB_PATH"
+      - run: uv pip install . pytest
+      - run: python -m pytest -q --ignore=tests/test_quantum_references.py --ignore=tests/test_applied_references.py --ignore=tests/test_phase_suite.py
+      - run: python -Werror -m benchmarks.quantum > /dev/null
+      - run: uv pip install '.[references]' matplotlib
+      - run: |
+          python -m pytest -q tests/test_quantum_references.py tests/test_applied_references.py
+          python -c "import platform,numpy,scipy,qiskit,qutip; print(platform.platform(),platform.python_version(),numpy.__version__,scipy.__version__,qiskit.__version__,qutip.__version__)"

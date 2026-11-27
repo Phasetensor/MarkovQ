@@ -1,0 +1,45 @@
+{
+  "baseline": "2 arccos(0.5)",
+  "input_sha256": "9a09d16f0ca788787e6ace65c0dab1a5e819e48aa7716f3b7ec17ce16964e386",
+  "inputs": {
+    "boundaries": "finite",
+    "dataset": "synthetic",
+    "graph": [
+      [
+        0.75,
+        0.25
+      ],
+      [
+        0.25,
+        0.75
+      ]
+    ],
+    "initial_state": "entire operator"
+  },
+  "limitations": "Small reversible kernel.",
+  "model": "Szegedy correspondence",
+  "peak_rss_bytes": 108511232,
+  "protocol": "spectrum",
+  "results": {
+    "classical_eigenvalues": [
+      0.5,
+      1.0
+    ],
+    "phases": [
+      -2.0943951023931953,
+      0.0,
+      0.0,
+      2.0943951023931953
+    ]
+  },
+  "runtime_s": 0.0007742090000000257,
+  "schema": 2,
+  "seed": 0,
+  "solver": "two reflections",
+  "tolerance": 1e-10,
+  "versions": {
+    "numpy": "2.0.2",
+    "python": "3.9.6",
+    "scipy": "1.13.1"
+  }
+}
