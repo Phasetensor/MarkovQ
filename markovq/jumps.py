@@ -33,7 +33,11 @@ def compound_poisson(
         total = int(counts.sum())
         if total:
             sizes = np.asarray(sample_jumps(rng, total))
-            if sizes.shape != (total,) or np.iscomplexobj(sizes) or not np.isfinite(sizes).all():
+            if (
+                sizes.shape != (total,)
+                or np.iscomplexobj(sizes)
+                or not np.isfinite(sizes).all()
+            ):
                 raise ValueError("sampler must return one finite real value per jump")
             owners = np.repeat(np.arange(paths), counts)
             increments[:, j] = np.bincount(owners, weights=sizes, minlength=paths)

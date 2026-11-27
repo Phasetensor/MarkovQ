@@ -1,6 +1,14 @@
 """Public classical and spectral foundations of MarkovQ."""
 
 from .chains import MarkovChain, classify_states, validate_transition_matrix
+from .classification import (
+    accessible,
+    closed_classes,
+    communicates,
+    communicating_classes,
+    is_irreducible,
+    state_period,
+)
 from .continuous import ContinuousChain, birth_death
 from .jumps import compound_poisson
 from .mixing import (
@@ -45,6 +53,12 @@ __all__ = [
     "LevyProcess",
     "MarkovChain",
     "absorption",
+    "state_period",
+    "is_irreducible",
+    "communicating_classes",
+    "communicates",
+    "closed_classes",
+    "accessible",
     "birth_death",
     "classify_states",
     "compound_poisson",

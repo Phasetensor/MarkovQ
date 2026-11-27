@@ -77,7 +77,9 @@ class Spectrum(NamedTuple):
 def spectrum(operator: MatrixInput, k: Optional[int] = None) -> Spectrum:
     a = hermitian(operator)
     if k is None:
-        values, vectors = np.linalg.eigh(a if isinstance(a, np.ndarray) else a.toarray())
+        values, vectors = np.linalg.eigh(
+            a if isinstance(a, np.ndarray) else a.toarray()
+        )
     else:
         if not 0 < count(k) < a.shape[0] - 1:
             raise ValueError("partial spectrum requires 0 < k < n-1")

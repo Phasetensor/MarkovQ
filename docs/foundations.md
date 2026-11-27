@@ -6,7 +6,7 @@ All finite-state APIs use integer state indices starting at zero. Rows of a stoc
 |---|---|---|---|
 |01|MarkovChain, validate_transition_matrix|Multi-step transition is a chronological product. A schedule contains subsequent matrices after the initial transition. Two noncommuting matrices test order. Seeded path frequencies are checked against matrix powers.|Dense homogeneous powers cost O(n³ log k). Sparse powers can fill in.|
 |02|line_walk, grid_walk, graph_walk, lattice_paths, path_statistics, occupation_times|Graph moves are proportional to outgoing weights. Reflection holds an attempted out-of-range step at the endpoint. A cycle wraps. Lattice paths choose one coordinate per step. Verify binomial return mass and variance at fixed time.|Lattice output requires O(paths × time × dimension) storage. Grid indices are row-major.|
-|03|classify_states|Strongly connected components give communicating classes. A closed finite class is recurrent. Period is the gcd of directed cycle lengths. Zero denotes a singleton with no return path.|SCC discovery is linear in vertices and edges. Classification is finite-state only.|
+|03|classify_states, accessible, communicates, communicating_classes, closed_classes, state_period, is_irreducible|Strongly connected components give communicating classes. A closed finite class is recurrent. Period is the gcd of directed cycle lengths. Zero denotes a singleton with no return path.|SCC discovery is linear in vertices and edges. Classification is finite-state only.|
 |04|recurrence, return_generators, eventual_line_return, line_return, lattice_recurrence|First return begins at step one. G(z) is a diagonal resolvent entry, F(z)=1−1/G(z). A biased line has eventual return 2 min(p,1−p). Symmetric nearest-neighbour walks on integer lattices are recurrent in dimensions one and two.|Dense resolvent costs O(n³). Lattice classification uses the analytic infinite model.|
 |05|absorption, line_walk|For transient block Q solve (I−Q)N=I. Visits=N, mean=N1, class-entry probabilities=NR. Output columns follow the returned class order. The fair gambler on 0…b has upper-exit probability i/b and mean i(b−i).|Dense O(n³). Closed classes are terminal sets, including non-singletons.|
 |06|hitting, passage_distribution, empirical_passage|Hitting includes time zero. For reachable nontarget states solve (I−Q)p=r then (I−Q)m=p. Conditional mean=m/p, undefined at p=0. Eventual failure gives infinite unconditional mean. Output mass is indexed by time then start. Censored paths report last observed time and a flag.|Dense eventual solves O(n³), finite horizon O(kn²). Fixed targets within each calculation.|
@@ -21,10 +21,10 @@ The executable reference checks are in tests/test_foundations.py. The benchmark 
 
 ## References
 
-- Levin and Peres, with contributions by Wilmer, *Markov Chains and Mixing Times*, second edition. Finite chains, stationarity, coupling and spectral bounds.
+- Levin and Peres, with contributions by Wilmer, [*Markov Chains and Mixing Times*](https://doi.org/10.1090/mbk/107), second edition. Finite chains, stationarity, coupling and spectral bounds.
 - Norris, *Markov Chains*. Classification, hitting times and continuous-time chains.
 - [Pólya's random walk constants](https://mathworld.wolfram.com/PolyasRandomWalkConstants.html). Infinite-lattice return benchmarks.
-- Chung, *Spectral Graph Theory*. Normalized graph Laplacians and eigenvalues.
+- Chung, [*Spectral Graph Theory*](https://fanchung.ucsd.edu/research/outline.html). Normalized graph Laplacians and eigenvalues.
 
 ## Additional reference checks
 
