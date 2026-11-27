@@ -1,0 +1,8 @@
+cff-version: 1.2.0
+message: "Please cite MarkovQ when using this software."
+title: MarkovQ
+authors:
+  - name: PhaseTensor
+repository-code: https://github.com/Phasetensor/MarkovQ
+license: Apache-2.0
+type: software
