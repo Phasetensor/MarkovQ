@@ -1,17 +1,17 @@
 """Finite chains use row distributions and chronological right multiplication."""
-from __future__ import annotations
-from typing import Optional, Iterable
-from numpy.typing import ArrayLike
-from ._types import MatrixInput, Matrix, Seed
 
+from __future__ import annotations
 
 from math import gcd
 from operator import index
-from typing import NamedTuple
+from typing import Iterable, NamedTuple, Optional
 
 import numpy as np
+from numpy.typing import ArrayLike
 from scipy import sparse
 from scipy.sparse.csgraph import connected_components
+
+from ._types import Matrix, MatrixInput, Seed
 
 
 def count(n: int) -> int:
@@ -65,7 +65,12 @@ def distribution(p: ArrayLike, size: int) -> np.ndarray:
 
 
 class MarkovChain:
-    def __init__(self, transition: MatrixInput, *, schedule: Optional[Iterable[MatrixInput]]=None) -> None:
+    def __init__(
+        self,
+        transition: MatrixInput,
+        *,
+        schedule: Optional[Iterable[MatrixInput]] = None,
+    ) -> None:
         self.P = validate_transition_matrix(transition)
         self.n = self.P.shape[0]
         self.steps = (
@@ -82,9 +87,9 @@ class MarkovChain:
             raise ValueError("schedule exhausted")
         return range(start, start + steps)
 
-    def n_step_matrix(self, steps: int, start: int=0) -> Matrix:
+    def n_step_matrix(self, steps: int, start: int = 0) -> Matrix:
         interval = self._interval(steps, start)
-        if self.steps is None and steps:
+        if self.steps is None:
             return (
                 self.P**steps
                 if sparse.issparse(self.P)
@@ -99,15 +104,24 @@ class MarkovChain:
             out = out @ self.steps[t]
         return out
 
-    def transition_probability(self, i: int, j: int, steps: int=1, start: int=0) -> float:
+    def transition_probability(
+        self, i: int, j: int, steps: int = 1, start: int = 0
+    ) -> float:
         return float(
             self.n_step_matrix(steps, start)[state(i, self.n), state(j, self.n)]
         )
 
-    def evolve(self, initial: ArrayLike, steps: int, start: int=0) -> np.ndarray:
+    def evolve(self, initial: ArrayLike, steps: int, start: int = 0) -> np.ndarray:
         return distribution(initial, self.n) @ self.n_step_matrix(steps, start)
 
-    def sample_paths(self, initial: ArrayLike, steps: int, paths: int=1, seed: Seed=None, start: int=0) -> np.ndarray:
+    def sample_paths(
+        self,
+        initial: ArrayLike,
+        steps: int,
+        paths: int = 1,
+        seed: Seed = None,
+        start: int = 0,
+    ) -> np.ndarray:
         interval = self._interval(steps, start)
         rng = np.random.default_rng(seed)
         out = np.empty((count(paths), steps + 1), dtype=int)
@@ -116,7 +130,7 @@ class MarkovChain:
             p = self.P if self.steps is None else self.steps[t]
             for i in np.unique(out[:, col - 1]):
                 mask = out[:, col - 1] == i
-                row = p.getrow(i).toarray()[0] if sparse.issparse(p) else p[i]
+                row = p[i] if isinstance(p, np.ndarray) else p.getrow(i).toarray()[0]
                 out[mask, col] = rng.choice(self.n, mask.sum(), p=row)
         return out
 

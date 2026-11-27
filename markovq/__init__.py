@@ -2,6 +2,7 @@
 
 from .chains import MarkovChain, classify_states, validate_transition_matrix
 from .continuous import ContinuousChain, birth_death
+from .jumps import compound_poisson
 from .mixing import (
     detailed_balance,
     distances,
@@ -18,18 +19,24 @@ from .passage import (
     return_generators,
 )
 from .processes import LevyProcess
-from .spectral import graph_operators, hamiltonian, hermitian_dilation, spectrum, spectral_diagnostics
+from .spectral import (
+    graph_operators,
+    hamiltonian,
+    hermitian_dilation,
+    spectral_diagnostics,
+    spectrum,
+)
 from .walks import (
     empirical_passage,
-    grid_walk,
-    occupation_times,
     eventual_line_return,
     graph_walk,
+    grid_walk,
     increment_walk,
     lattice_paths,
     lattice_recurrence,
     line_return,
     line_walk,
+    occupation_times,
     path_statistics,
 )
 
@@ -40,6 +47,7 @@ __all__ = [
     "absorption",
     "birth_death",
     "classify_states",
+    "compound_poisson",
     "detailed_balance",
     "distances",
     "empirical_passage",

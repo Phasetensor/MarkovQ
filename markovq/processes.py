@@ -1,12 +1,14 @@
 """Finite-activity Lévy models with Gaussian or deterministic jump sizes."""
-from __future__ import annotations
-from typing import Union
-from numpy.typing import ArrayLike
-from ._types import Seed
 
+from __future__ import annotations
 
 from dataclasses import dataclass
+from typing import Union
+
 import numpy as np
+from numpy.typing import ArrayLike
+
+from ._types import Seed
 from .chains import count
 from .continuous import time_value
 
@@ -56,7 +58,9 @@ class LevyProcess:
             ),
         )
 
-    def sample(self, times: ArrayLike, paths: int, seed: Seed=None) -> tuple[np.ndarray, np.ndarray]:
+    def sample(
+        self, times: ArrayLike, paths: int, seed: Seed = None
+    ) -> tuple[np.ndarray, np.ndarray]:
         times = np.asarray(times, float)
         if (
             times.ndim != 1

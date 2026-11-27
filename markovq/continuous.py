@@ -1,14 +1,15 @@
 """Finite CTMCs with explicit rate units and event-driven paths."""
-from __future__ import annotations
-from typing import Iterable
-from numpy.typing import ArrayLike
-from ._types import MatrixInput, Seed
 
+from __future__ import annotations
+
+from typing import Iterable
 
 import numpy as np
-from scipy import sparse
+from numpy.typing import ArrayLike
 from scipy.linalg import expm
 from scipy.stats import poisson
+
+from ._types import MatrixInput, Seed
 from .chains import matrix, state
 from .passage import hitting
 
@@ -23,7 +24,7 @@ def time_value(t: float) -> float:
 class ContinuousChain:
     def __init__(self, generator: MatrixInput, unit: str) -> None:
         q = matrix(generator)
-        self.Q = q.toarray() if sparse.issparse(q) else q
+        self.Q = q if isinstance(q, np.ndarray) else q.toarray()
         off = self.Q.copy()
         np.fill_diagonal(off, 0)
         if (
@@ -51,7 +52,7 @@ class ContinuousChain:
                 out[i, i] = 1
         return out
 
-    def uniformize(self, t: float, tol: float=1e-12) -> np.ndarray:
+    def uniformize(self, t: float, tol: float = 1e-12) -> np.ndarray:
         t = time_value(t)
         if not 0 < tol < 1:
             raise ValueError("invalid tail tolerance")
@@ -67,7 +68,9 @@ class ContinuousChain:
             power = power @ step
         return out
 
-    def events(self, initial: int, horizon: float, seed: Seed=None) -> tuple[np.ndarray, np.ndarray]:
+    def events(
+        self, initial: int, horizon: float, seed: Seed = None
+    ) -> tuple[np.ndarray, np.ndarray]:
         i = state(initial, len(self.Q))
         horizon = time_value(horizon)
         rng = np.random.default_rng(seed)

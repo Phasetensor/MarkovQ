@@ -1,14 +1,15 @@
 """Undirected Laplacians, Hermitian graph generators and spectral subspaces."""
+
 from __future__ import annotations
-from typing import Optional
-from ._types import MatrixInput, Matrix
 
+from typing import NamedTuple, Optional
 
-from typing import NamedTuple
 import numpy as np
 from scipy import sparse
 from scipy.sparse.linalg import eigsh
-from .chains import matrix, count
+
+from ._types import Matrix, MatrixInput
+from .chains import count, matrix
 
 
 def graph_operators(adjacency: MatrixInput) -> tuple[Matrix, Matrix, Matrix]:
@@ -43,7 +44,9 @@ def hermitian(a: MatrixInput) -> Matrix:
     return a
 
 
-def hamiltonian(adjacency: MatrixInput, kind: str="adjacency", gamma: float=1.0) -> Matrix:
+def hamiltonian(
+    adjacency: MatrixInput, kind: str = "adjacency", gamma: float = 1.0
+) -> Matrix:
     if not np.isreal(gamma) or not np.isfinite(gamma):
         raise ValueError("invalid coupling")
     if kind == "adjacency":
@@ -59,7 +62,7 @@ class Spectrum(NamedTuple):
     residual: float
     orthogonality_error: float
 
-    def projectors(self, tol: float=1e-9) -> list[tuple[float, np.ndarray]]:
+    def projectors(self, tol: float = 1e-9) -> list[tuple[float, np.ndarray]]:
         if not np.isfinite(tol) or tol < 0:
             raise ValueError("invalid degeneracy tolerance")
         groups = np.split(
@@ -71,18 +74,23 @@ class Spectrum(NamedTuple):
         ]
 
 
-def spectrum(operator: MatrixInput, k: Optional[int]=None) -> Spectrum:
+def spectrum(operator: MatrixInput, k: Optional[int] = None) -> Spectrum:
     a = hermitian(operator)
     if k is None:
-        values, vectors = np.linalg.eigh(a.toarray() if sparse.issparse(a) else a)
+        values, vectors = np.linalg.eigh(a if isinstance(a, np.ndarray) else a.toarray())
     else:
         if not 0 < count(k) < a.shape[0] - 1:
             raise ValueError("partial spectrum requires 0 < k < n-1")
         # Hermitian real operators use the symmetric Lanczos solver.
-        real = np.all((a.data if sparse.issparse(a) else a).imag == 0)
+        real = np.all((a if isinstance(a, np.ndarray) else a.data).imag == 0)
         values, vectors = eigsh(
             sparse.csr_matrix(a.real if real else a), k=k, which="SA"
         )
+        if not real:
+            basis, _ = np.linalg.qr(vectors)
+            projected = basis.conj().T @ (a @ basis)
+            values, rotation = np.linalg.eigh(projected)
+            vectors = basis @ rotation
         order = values.argsort()
         values, vectors = values[order], vectors[:, order]
     return Spectrum(
@@ -97,13 +105,15 @@ def spectrum(operator: MatrixInput, k: Optional[int]=None) -> Spectrum:
     )
 
 
-def spectral_diagnostics(operator: MatrixInput, tolerance: float=1e-10) -> tuple[np.ndarray, float]:
+def spectral_diagnostics(
+    operator: MatrixInput, tolerance: float = 1e-10
+) -> tuple[np.ndarray, float]:
     """Full-spectrum adjacent gaps and numerical 2-norm condition number."""
     if not np.isfinite(tolerance) or tolerance < 0:
         raise ValueError("invalid singularity tolerance")
     values = spectrum(operator).values
     magnitudes = abs(values)
-    return np.diff(values), (
+    return np.diff(values), float(
         np.inf if magnitudes.min() <= tolerance else magnitudes.max() / magnitudes.min()
     )
 

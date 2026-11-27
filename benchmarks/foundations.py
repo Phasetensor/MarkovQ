@@ -3,18 +3,20 @@
 import json
 import platform
 from time import perf_counter
+
 import numpy as np
 import scipy
-from markovq import ContinuousChain, LevyProcess, line_walk, lattice_paths, spectrum
+
+from markovq import ContinuousChain, LevyProcess, lattice_paths, line_walk, spectrum
 from markovq.walks import empirical_passage
 
 
 def estimate(x, reference):
-    return dict(
-        estimate=float(x.mean()),
-        reference=reference,
-        standard_error=float(x.std(ddof=1) / np.sqrt(x.size)),
-    )
+    return {
+        "estimate": float(x.mean()),
+        "reference": reference,
+        "standard_error": float(x.std(ddof=1) / np.sqrt(x.size)),
+    }
 
 
 def run():
@@ -31,25 +33,25 @@ def run():
     paths, _ = jump.sample([0, 1], n, 234)
     star = np.zeros((10, 10))
     star[1:, 0] = star[0, 1:] = 1
-    return dict(
-        python=platform.python_version(),
-        numpy=np.__version__,
-        scipy=scipy.__version__,
-        trajectories=n,
-        seeds=[231, 232, 233, 234],
-        lattice_msd=estimate(delta**2, 20),
-        restricted_ruin_time=estimate(times, 16),
-        censored_ruin_paths=int(censor.sum()),
-        ctmc_endpoint=estimate(endpoint, expected),
-        ctmc_uniformization_error=float(
+    return {
+        "python": platform.python_version(),
+        "numpy": np.__version__,
+        "scipy": scipy.__version__,
+        "trajectories": n,
+        "seeds": [231, 232, 233, 234],
+        "lattice_msd": estimate(delta**2, 20),
+        "restricted_ruin_time": estimate(times, 16),
+        "censored_ruin_paths": int(censor.sum()),
+        "ctmc_endpoint": estimate(endpoint, expected),
+        "ctmc_uniformization_error": float(
             abs(generator.uniformize(1) - generator.transition(1)).max()
         ),
-        levy_endpoint=estimate(paths[:, -1], jump.moments(1)[0]),
-        star_spectral_error=float(
+        "levy_endpoint": estimate(paths[:, -1], jump.moments(1)[0]),
+        "star_spectral_error": float(
             abs(spectrum(star).values - np.r_[-3, np.zeros(8), 3]).max()
         ),
-        elapsed_seconds=perf_counter() - start,
-    )
+        "elapsed_seconds": perf_counter() - start,
+    }
 
 
 if __name__ == "__main__":

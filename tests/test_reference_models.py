@@ -1,4 +1,5 @@
 """Independent small-system references for the classical and spectral operators."""
+
 import itertools
 
 import numpy as np
@@ -109,6 +110,7 @@ def test_hitting_finite_horizon_can_miss_eventual_hit():
 @pytest.mark.parametrize("sparse_input", [False, True])
 def test_dilation(sparse_input):
     from scipy import sparse
+
     from markovq.spectral import hermitian_dilation
 
     directed = np.array([[0, 1], [2, 0]])

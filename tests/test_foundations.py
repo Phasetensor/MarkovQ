@@ -1,11 +1,11 @@
 import numpy as np
 import pytest
-from scipy import sparse
 from numpy.testing import assert_allclose as close
+from scipy import sparse
 
 import markovq as m
-from markovq.walks import grid_walk, occupation_times, empirical_passage
 from markovq.spectral import spectral_diagnostics
+from markovq.walks import empirical_passage, grid_walk, occupation_times
 
 P = np.array([[0.75, 0.25], [0.5, 0.5]])
 SWAP = [[0, 1], [1, 0]]

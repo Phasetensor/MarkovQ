@@ -25,3 +25,9 @@ The executable reference checks are in tests/test_foundations.py. The benchmark 
 - Norris, *Markov Chains*. Classification, hitting times and continuous-time chains.
 - [Pólya's random walk constants](https://mathworld.wolfram.com/PolyasRandomWalkConstants.html). Infinite-lattice return benchmarks.
 - Chung, *Spectral Graph Theory*. Normalized graph Laplacians and eigenvalues.
+
+## Additional reference checks
+
+The independent path enumerator in tests/test_reference_models.py enumerates the complete path space of a small dense chain. Boolean transitive closure verifies communication independently from SCC discovery, and degree weights check a reversible stationary distribution and mean return times. The graph tests cover paths, cycles, stars, grids, complete graphs and an isolated vertex. A Hermitian dilation embeds directed real weights into a doubled vertex space; its model and dimension differ from those of the original directed graph. The partial complex eigensolver orthonormalizes its Krylov subspace before Rayleigh–Ritz refinement.
+
+The finite-support increment simulator accepts arbitrary real steps. The compound_poisson function accepts an iid jump sampler and returns interval counts. For Gaussian jumps LevyProcess samples the exact aggregate conditional on those counts. The exponential-jump example independently tests the compound Poisson identities E[X(t)]=λtE[J] and Var[X(t)]=λtE[J²]. A general stable law requires an explicit parameterization, special treatment near stability index one, and characteristic-function diagnostics when moments diverge. These extensions are outside the current supported family.

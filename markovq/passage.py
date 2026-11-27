@@ -1,22 +1,22 @@
 """Finite-chain boundary equations. Hitting includes time zero."""
+
 from __future__ import annotations
-from typing import Union, Iterable
-from ._types import MatrixInput
 
+from typing import Iterable, NamedTuple, Union
 
-from typing import NamedTuple
 import numpy as np
-from scipy import sparse
+
+from ._types import MatrixInput
 from .chains import classify_states, count, state, validate_transition_matrix
 
 
 def dense(p: MatrixInput) -> np.ndarray:
     p = validate_transition_matrix(p)
-    return p.toarray() if sparse.issparse(p) else p
+    return p if isinstance(p, np.ndarray) else p.toarray()
 
 
-def ancestors(p: MatrixInput, targets: Union[list[int], np.ndarray]) -> np.ndarray:
-    found = np.zeros(len(p), bool)
+def ancestors(p: np.ndarray, targets: Union[list[int], np.ndarray]) -> np.ndarray:
+    found = np.zeros(len(p), dtype=np.bool_)
     found[targets] = True
     while True:
         updated = found | (p[:, found] > 0).any(axis=1)
@@ -53,7 +53,9 @@ def hitting(p: MatrixInput, targets: Iterable[int]) -> Passage:
     return Passage(prob, np.where(defective, np.inf, conditional), conditional)
 
 
-def passage_distribution(p: MatrixInput, targets: Iterable[int], horizon: int, *, first_return: bool=False) -> tuple[np.ndarray, np.ndarray]:
+def passage_distribution(
+    p: MatrixInput, targets: Iterable[int], horizon: int, *, first_return: bool = False
+) -> tuple[np.ndarray, np.ndarray]:
     p = dense(p)
     targets = sorted({state(i, len(p)) for i in targets})
     if not targets:

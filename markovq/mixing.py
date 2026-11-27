@@ -1,17 +1,19 @@
 """Closed-class stationary laws and classical convergence diagnostics."""
-from __future__ import annotations
-from typing import Optional
-from numpy.typing import ArrayLike
-from ._types import MatrixInput
 
+from __future__ import annotations
+
+from typing import Optional
 
 import numpy as np
+from numpy.typing import ArrayLike
 from scipy.special import rel_entr
+
+from ._types import MatrixInput
 from .chains import classify_states, count, distribution
 from .passage import dense
 
 
-def stationary_distributions(p: MatrixInput, method: str="linear") -> np.ndarray:
+def stationary_distributions(p: MatrixInput, method: str = "linear") -> np.ndarray:
     p = dense(p)
     laws = []
     for cls in classify_states(p):
@@ -43,18 +45,20 @@ def detailed_balance(p: MatrixInput, pi: ArrayLike) -> bool:
 
 
 def distances(p: ArrayLike, q: ArrayLike) -> dict[str, float]:
-    p = distribution(p, len(p))
+    p = distribution(p, np.asarray(p).size)
     q = distribution(q, len(p))
     diff = p - q
-    return dict(
-        tv=np.linalg.norm(diff, 1) / 2,
-        l1=np.linalg.norm(diff, 1),
-        l2=np.linalg.norm(diff),
-        kl=rel_entr(p, q).sum(),
-    )
+    return {
+        "tv": np.linalg.norm(diff, 1) / 2,
+        "l1": np.linalg.norm(diff, 1),
+        "l2": np.linalg.norm(diff),
+        "kl": rel_entr(p, q).sum(),
+    }
 
 
-def iterate(p: MatrixInput, initial: ArrayLike, steps: int, cesaro: bool=False) -> np.ndarray:
+def iterate(
+    p: MatrixInput, initial: ArrayLike, steps: int, cesaro: bool = False
+) -> np.ndarray:
     p = dense(p)
     current = distribution(initial, len(p))
     avg = current.copy()
@@ -64,7 +68,9 @@ def iterate(p: MatrixInput, initial: ArrayLike, steps: int, cesaro: bool=False) 
     return avg if cesaro else current
 
 
-def mixing_time(p: MatrixInput, epsilon: float=0.25, max_steps: int=1000) -> Optional[int]:
+def mixing_time(
+    p: MatrixInput, epsilon: float = 0.25, max_steps: int = 1000
+) -> Optional[int]:
     """Exact worst-start TV on a finite horizon; None means horizon exceeded."""
     p = dense(p)
     classes = classify_states(p)
