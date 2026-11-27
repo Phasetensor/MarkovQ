@@ -46,3 +46,8 @@ jobs:
           /tmp/markovq-install/bin/pip install dist/*.whl
           cd /tmp
           /tmp/markovq-install/bin/python -c 'from markovq import line_walk, quantum; assert line_walk(3).n == 3 and quantum.cycle_walk(3).operator.shape == (6, 6)'
+      - run: sha256sum dist/* > dist/SHA256SUMS
+      - uses: actions/upload-artifact@v4
+        with:
+          name: distributions-python-${{ matrix.python }}
+          path: dist/

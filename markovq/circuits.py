@@ -97,3 +97,42 @@ def simulate(
         "runtime_s": perf_counter() - started,
         "evidence": "ideal circuit simulation",
     }
+
+
+def execute_backend(circuit, initial: ArrayLike, backend, *, shots: int, seed: int):
+    """Submit a measured circuit to a caller-selected backend supporting Backend.run.
+
+    The seed controls compilation. Backend sampling and queue policies belong to the
+    caller's provider. Runtime includes compilation and waiting for the result.
+    """
+    from qiskit import QuantumCircuit, transpile
+
+    shots = count(shots)
+    if not shots:
+        raise ValueError("backend execution requires positive shots")
+    started = perf_counter()
+    n = circuit.num_qubits
+    prepared = QuantumCircuit(n)
+    prepared.prepare_state(ket(initial, 2**n), range(n))
+    prepared.compose(circuit, inplace=True)
+    prepared.measure_all()
+    compiled = transpile(prepared, backend, seed_transpiler=count(seed))
+    job = backend.run(compiled, shots=shots)
+    counts = job.result().get_counts()
+    if sum(counts.values()) != shots:
+        raise ValueError("backend returned an inconsistent shot count")
+    return {
+        "backend": backend.name,
+        "job_id": job.job_id(),
+        "counts": dict(counts),
+        "shots": shots,
+        "provider_jobs": 1,
+        "logical_qubits": n,
+        "ancillary_qubits": len({q for op in compiled.data for q in op.qubits}) - n,
+        "depth": compiled.depth(),
+        "two_qubit_gates": sum(
+            len(op.qubits) == 2 and op.operation.name != "barrier"
+            for op in compiled.data
+        ),
+        "runtime_s": perf_counter() - started,
+    }

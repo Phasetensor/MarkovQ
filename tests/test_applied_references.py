@@ -49,3 +49,32 @@ def test_reference_channels():
         ops = kraus_model(kind, 0.31)
         ref = DensityMatrix(rho).evolve(Kraus(list(ops)))
         assert_allclose(apply_channel(rho, ops), ref.data, atol=1e-12)
+
+
+def test_local_backend_execution():
+    from qiskit.providers.basic_provider import BasicSimulator
+
+    backend = BasicSimulator()
+    c = circuits.cycle_circuit(4, 0)
+    result = circuits.execute_backend(c, np.eye(8)[2], backend, shots=32, seed=14)
+    assert result["counts"] == {"010": 32}
+    assert result["provider_jobs"] == 1 and result["job_id"]
+    with pytest.raises(ValueError):
+        circuits.execute_backend(c, np.eye(8)[2], backend, shots=0, seed=14)
+
+
+def test_channel_against_qutip_master_equation():
+    import qutip as qt
+
+    from markovq.noise import apply_channel, kraus_model
+
+    rho = qt.ket2dm((qt.basis(2, 0) + 1j * qt.basis(2, 1)).unit())
+    for name, collapse in [
+        ("amplitude-damping", qt.destroy(2)),
+        ("dephasing", qt.sigmaz() / np.sqrt(2)),
+    ]:
+        p = 0.37
+        duration = -np.log1p(-p)
+        ref = (duration * qt.liouvillian(0 * qt.sigmaz(), [collapse])).expm()
+        expected = qt.vector_to_operator(ref * qt.operator_to_vector(rho)).full()
+        assert_allclose(apply_channel(rho.full(), kraus_model(name, p)), expected)

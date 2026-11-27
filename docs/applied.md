@@ -25,3 +25,5 @@ A (spreading) and B (ruin) have individual study exports. C (classification), D 
 ## Case studies
 
 The six exported studies cover line spreading, gambler's ruin, Szegedy phase correspondence, monitored recurrence and detection, residue-network ranking, and a noise-aware four-cycle circuit. Studies 1–5 have archived local results in this directory. Study 6 uses separately installed releases of all three PhaseTensor libraries. BornLens tests position distributions separately from simultaneous Pauli comparisons. Resource estimates describe this specific measurement protocol. See the [dataset manifest](../benchmarks/data/README.md) for input provenance and held-out labels.
+
+The optional execute_backend interface submits measured circuits to a supplied Qiskit backend implementing run and waits for its result. The backend controls access, sampling and charges. CI exercises only BasicSimulator. QuTiP master-equation exponentials independently check amplitude damping and dephasing.
