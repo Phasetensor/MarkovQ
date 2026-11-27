@@ -1616,3 +1616,6 @@ Do not introduce unrelated features.
 Keep the project focused on classical stochastic processes, quantum walks, spectral graph dynamics and their scientifically justified applications.
 
 The final objective is to establish MarkovQ as a rigorous, reproducible open-source scientific framework connecting classical probability mathematics with quantum graph dynamics.
+## Development checkpoint — numerical consolidation of modules 01–20
+
+The [consolidation review](docs/consolidation-review.md) records the evidence and limits for R01–R08. The next five modules remain outside this checkpoint.

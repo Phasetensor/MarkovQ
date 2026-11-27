@@ -102,7 +102,7 @@ def line_distribution(
         raise ValueError("line walk requires a two-level coin")
     amps = ket(initial_coin, 2)[:, None]
     for _ in range(steps):
-        mixed = c @ amps
+        mixed = np.einsum("ij,jk->ik", c, amps)
         amps = np.zeros((2, mixed.shape[1] + 2), complex)
         amps[0, :-2] = mixed[0]
         amps[1, 2:] = mixed[1]
@@ -137,7 +137,7 @@ def graph_walk(adjacency: ArrayLike, coins: Optional[list] = None) -> CoinedWalk
     )
 
 
-def _exponential_action(a: np.ndarray,v: np.ndarray) -> np.ndarray:
+def _exponential_action(a: np.ndarray, v: np.ndarray) -> np.ndarray:
     import platform
 
     import scipy
@@ -152,7 +152,7 @@ def _exponential_action(a: np.ndarray,v: np.ndarray) -> np.ndarray:
         from scipy.sparse.linalg import expm
 
         return expm(csc_matrix(a)) @ v
-    return np.einsum("ij,j->i",linalg.expm(a),v)
+    return np.einsum("ij,j->i", linalg.expm(a), v)
 
 
 def continuous_walk(
@@ -166,7 +166,7 @@ def continuous_walk(
         return expm_multiply((-1j * time) * h, v)
     a = h if isinstance(h, np.ndarray) else h.toarray()
     if method == "dense":
-        return _exponential_action(-1j*time*a,v)
+        return _exponential_action(-1j * time * a, v)
     if method == "spectral":
         w, b = linalg.eigh(a)
         return np.einsum(
@@ -209,6 +209,13 @@ def szegedy(
     for i in range(n):
         a[i * n : (i + 1) * n, i] = np.sqrt(p[i])
         b[i::n, i] = np.sqrt(q[i])
-    ra = linalg.blas.dgemm(2.,a,a,trans_b=True) - np.eye(n*n)
-    rb = linalg.blas.dgemm(2.,b,b,trans_b=True) - np.eye(n*n)
-    return SzegedyWalk(a, b, ra, rb, linalg.blas.dgemm(1.,rb,ra), linalg.blas.dgemm(1.,a,b,trans_a=True))
+    ra = linalg.blas.dgemm(2.0, a, a, trans_b=True) - np.eye(n * n)
+    rb = linalg.blas.dgemm(2.0, b, b, trans_b=True) - np.eye(n * n)
+    return SzegedyWalk(
+        a,
+        b,
+        ra,
+        rb,
+        linalg.blas.dgemm(1.0, rb, ra),
+        linalg.blas.dgemm(1.0, a, b, trans_a=True),
+    )

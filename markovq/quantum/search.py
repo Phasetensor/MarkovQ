@@ -33,8 +33,12 @@ class SearchResult(NamedTuple):
         if not np.isfinite(p) or p < 0 or p > 1 + 16 * np.finfo(float).eps:
             raise ValueError("invalid probability")
         if self.log_success is not None:
-            logged=float(self.log_success[i])
-            if np.isnan(logged) or logged>16*np.finfo(float).eps or (p==0 and np.exp(logged)>0):
+            logged = float(self.log_success[i])
+            if (
+                np.isnan(logged)
+                or logged > 16 * np.finfo(float).eps
+                or (p == 0 and np.exp(logged) > 0)
+            ):
                 raise ValueError("invalid log probability")
         if p == 0:
             return (
@@ -75,6 +79,20 @@ class SearchResult(NamedTuple):
             "marking_queries": cost(self.discrete_queries[index]),
             "analog_oracle_time": cost(self.oracle_time[index]),
         }
+
+    def resource_status(self,index: int) -> dict[str,str]:
+        """Classify each ideal cost and explicitly identify unmeasured physical costs."""
+        pstatus=self.cost_status(index)
+        result={}
+        for name,value in self.expected_cost(index).items():
+            if np.isfinite(value):
+                result[name]="finite"
+            elif pstatus=="zero-represented":
+                result[name]="infinite-for-represented-zero"
+            else:
+                result[name]="finite-overflow"
+        result.update(gate_count="unmeasured",wall_time="unmeasured",hardware_cost="unmeasured")
+        return result
 
 
 def _probabilities(amplitudes):

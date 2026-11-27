@@ -18,3 +18,7 @@ With the initial state split equally between a bright and a dark component, 49.6
 The stored benchmark record comes from the Linux Python 3.12 reference run. The local macOS NumPy 2.0.2 / SciPy 1.13.1 stack emitted floating-point warnings inside the dense exponential benchmark. The independent Linux run completed with numerical warnings promoted to errors; the two systems agreed on the sampled detection fraction and had comparable propagation residuals. Wall-clock measurements are environment-specific.
 
 [API, assumptions and references](quantum.md) · [Numerical record](quantum-benchmarks.json) · [CI history](https://github.com/Phasetensor/MarkovQ/actions)
+
+## Subsequent numerical review
+
+The historical milestone above is retained for comparison. See the [consolidation review](consolidation-review.md) for the warning reproduction, corrected solver paths, precision limits and stress evidence.

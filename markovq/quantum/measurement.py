@@ -140,10 +140,10 @@ def eventual_detection(
         split(pt, rt),
         split(max(floor, pt * 4), max(floor, rt * 4)),
         split(floor, floor),
-        split(floor/8, floor/8),
+        split(floor / 8, floor / 8),
     ]
     vb = adj(bright) @ v
-    amplitude=float(linalg.norm(vb))
+    amplitude = float(linalg.norm(vb))
     prob = amplitude**2
     estimates = [prob] + [float(np.linalg.norm(adj(a) @ v) ** 2) for a in alternatives]
     dark = np.eye(len(u)) - bright @ adj(bright)
@@ -156,25 +156,28 @@ def eventual_detection(
     )
     # A tiny absolute coupling may still exceed its componentwise error.
     # Use a posteriori eigenvector residual / spectral separation for isolated modes.
-    z=schur.diagonal()
-    for g in _groups(z,min(pt,floor)):
-        if len(g)!=1:
+    z = schur.diagonal()
+    for g in _groups(z, min(pt, floor)):
+        if len(g) != 1:
             continue
-        k=int(g[0])
-        mode=b[:,k]
-        strength=float(linalg.norm(p@mode))
-        if 0<strength<=min(rt,floor):
-            gap=float(np.min(abs(np.delete(z,k)-z[k]),initial=2.))
-            product_error=floor*linalg.norm(abs(p)@abs(mode))
-            rotation_error=linalg.norm(u@mode-z[k]*mode)/gap
-            if strength>4*(product_error+rotation_error):
-                ambiguous=True
+        k = int(g[0])
+        mode = b[:, k]
+        strength = float(linalg.norm(p @ mode))
+        if 0 < strength <= min(rt, floor):
+            gap = float(np.min(abs(np.delete(z, k) - z[k]), initial=2.0))
+            product_error = floor * linalg.norm(abs(p) @ abs(mode))
+            rotation_error = linalg.norm(u @ mode - z[k] * mode) / gap
+            if strength > 4 * (product_error + rotation_error):
+                ambiguous = True
     status = "tolerance-sensitive" if ambiguous else "resolved-at-precision"
     mean = np.nan
     radius = condition = residual = hermiticity = minimum = np.nan
-    mean_status = "undefined" if amplitude==0 else "unresolved"
-    if not ambiguous and amplitude>0:
-        c = adj(bright) @ (np.eye(len(u)) - p) @ u @ bright
+    mean_status = "undefined" if amplitude == 0 else "unresolved"
+    projection_error=floor*linalg.norm(abs(bright).T@abs(v))
+    if not ambiguous and amplitude > projection_error:
+        transformed=linalg.blas.zgemm(1.,u,bright)
+        survivor=transformed-linalg.blas.zgemm(1.,p,transformed)
+        c=linalg.blas.zgemm(1.,bright,survivor,trans_a=2)
         radius = float(np.max(abs(linalg.eigvals(c))))
         if radius < 1 - 4 * eps:
             try:
@@ -192,13 +195,14 @@ def eventual_detection(
                     linalg.norm(duration - adj(duration), 2) / max(1, norm)
                 )
                 minimum = float(linalg.eigvalsh((duration + adj(duration)) / 2)[0])
-                normalized=vb/amplitude
+                normalized = vb / amplitude
                 estimate = float(np.vdot(normalized, duration @ normalized).real)
                 if (
                     np.isfinite(estimate)
                     and estimate >= 1 - solver_tol
                     and minimum >= 1 - solver_tol
-                    and max(condition * max(float(eps), float(residual)), hermiticity) < solver_tol
+                    and max(condition * max(float(eps), float(residual)), hermiticity)
+                    < solver_tol
                 ):
                     mean = estimate
                     mean_status = "finite"
@@ -289,7 +293,7 @@ def quantum_mixing(
     schur, b = linalg.schur(u, output="complex")
     z = schur.diagonal()
     floor = 8 * len(u) * np.finfo(float).eps
-    components = b * (adj(b) @ v)
+    components = b * np.einsum("ij,i->j", b.conj(), v)
 
     def limiting(tolerance):
         return sum(
@@ -309,13 +313,13 @@ def quantum_mixing(
         labels, np.einsum("ij,jk,ik->i", components, kernel, components.conj()).real
     )
     status = "tolerance-sensitive" if sensitivity > floor else "resolved-at-precision"
-    split_tv=float(abs(limit-limiting(0.)).sum()/2)
-    if split_tv>floor and status=="resolved-at-precision":
-        status="unresolved-phase-splitting"
+    split_tv = float(abs(limit - limiting(0.0)).sum() / 2)
+    if split_tv > floor and status == "resolved-at-precision":
+        status = "unresolved-phase-splitting"
     history = []
     for _ in range(horizon):
         history.append(marginal(v))
-        v = np.einsum("ij,j->i",u,v)
+        v = np.einsum("ij,j->i", u, v)
     avg = np.mean(history, axis=0)
     return Mixing(
         np.array(history),

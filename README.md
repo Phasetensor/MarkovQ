@@ -23,3 +23,5 @@ Install the independent reference solvers with `python -m pip install '.[referen
 [Quantum API and scientific conventions](https://github.com/Phasetensor/MarkovQ/blob/classical-spectral-foundations/docs/quantum.md) · [Quantum benchmark results](https://github.com/Phasetensor/MarkovQ/blob/classical-spectral-foundations/docs/quantum-benchmarks.json)
 
 [Scientific specifications and traceability](https://github.com/Phasetensor/MarkovQ/blob/classical-spectral-foundations/docs/foundations.md) · [Measured benchmark results](https://github.com/Phasetensor/MarkovQ/blob/classical-spectral-foundations/docs/benchmark-results.json) · [License](LICENSE)
+
+[Numerical consolidation review](docs/consolidation-review.md) · [Precision and solver guidance](docs/numerical-stability.md) · [Scaling measurements](docs/scalability-benchmarks.md)

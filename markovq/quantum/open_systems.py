@@ -10,7 +10,7 @@ from scipy import sparse
 from scipy.integrate import solve_ivp
 from scipy.sparse.linalg import LinearOperator, expm_multiply
 
-from .walks import TOL, adj, square, _exponential_action
+from .walks import TOL, _exponential_action, adj, square
 
 
 def density_matrix(matrix: ArrayLike) -> np.ndarray:
@@ -44,7 +44,7 @@ def liouvillian(
         c = square(operator)
         if c.shape != h.shape:
             raise ValueError("collapse operator dimension mismatch")
-        rate = adj(c) @ c
+        rate = np.einsum("ij,ik->jk", c.conj(), c)
         generator += np.kron(c.conj(), c) - 0.5 * (
             np.kron(eye, rate) + np.kron(rate.T, eye)
         )
@@ -102,10 +102,15 @@ class OpenEvolution(NamedTuple):
     hermiticity_error: np.ndarray
     minimum_eigenvalue: np.ndarray
 
-    def violations(self,tol: float=TOL) -> np.ndarray:
-        if not np.isfinite(tol) or tol<0:
+    def violations(self, tol: float = TOL) -> np.ndarray:
+        if not np.isfinite(tol) or tol < 0:
             raise ValueError("invalid physicality tolerance")
-        return (~np.isfinite(self.states).all(axis=(1,2)) | (self.trace_error>tol) | (self.hermiticity_error>tol) | (self.minimum_eigenvalue< -tol))
+        return (
+            ~np.isfinite(self.states).all(axis=(1, 2))
+            | (self.trace_error > tol)
+            | (self.hermiticity_error > tol)
+            | (self.minimum_eigenvalue < -tol)
+        )
 
 
 def evolve_density(
@@ -134,7 +139,7 @@ def evolve_density(
     x = rho.flatten(order="F")
     if method == "expm":
         g = liouvillian(h.toarray(), [c.toarray() for c, _, _ in parts])
-        vectors = np.array([_exponential_action(s*g,x) for s in t])
+        vectors = np.array([_exponential_action(s * g, x) for s in t])
     elif method in ("sparse", "matrix-free"):
         op = _generator(h, parts, method == "sparse")
         trace = sum(
