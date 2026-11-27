@@ -11,8 +11,11 @@ dependencies = ["numpy>=1.23","scipy>=1.9"]
 readme = "README.md"
 license = {file = "LICENSE"}
 
+[project.optional-dependencies]
+references = ["qiskit>=1", "qutip>=5"]
+
 [tool.setuptools]
-packages = ["markovq"]
+packages = ["markovq", "markovq.quantum"]
 
 [tool.setuptools.package-data]
 markovq = ["py.typed"]
