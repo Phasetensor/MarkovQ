@@ -59,3 +59,22 @@ def heldout_metrics(scores: ArrayLike,seeds: Iterable[int],positives: Iterable[i
         hits+=found
         ap+=found*hits/seen/len(pos)
     return {"auroc":float(auc),"average_precision":float(ap),"precision_at_k":float(top/k),"recall_at_k":float(top/len(pos))}
+
+
+def spectral_communities(adjacency: ArrayLike,tol: float=1e-10) -> dict:
+    """Small-graph Fiedler sign split; report ambiguous or disconnected cases."""
+    from scipy.sparse.csgraph import connected_components
+    a=sparse.csr_matrix(matrix(adjacency))
+    if a.min()<0 or (a-a.T).nnz or not np.isfinite(tol) or tol<0:
+        raise ValueError("expected undirected nonnegative weights and valid tolerance")
+    components,labels=connected_components(a,directed=False)
+    if components>1 or len(labels)==1:
+        return {"status":"connected-components","labels":labels}
+    if len(labels)>1024:
+        raise ValueError("dense community reference supports up to 1024 vertices")
+    lap=np.diag(np.asarray(a.sum(axis=1)).ravel())-a.toarray()
+    values,vectors=np.linalg.eigh(lap)
+    if len(values)>2 and values[2]-values[1]<=tol*max(1.,abs(values[-1])):
+        return {"status":"degenerate","labels":None}
+    vector=vectors[:,1]
+    return {"status":"fiedler-sign","labels":np.sign(vector*np.sign(vector[np.argmax(abs(vector))])).astype(int)}

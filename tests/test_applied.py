@@ -69,3 +69,25 @@ def test_report():
  lambda:simulate_endpoints(np.eye(2),[0,1],1,0,seed=0),lambda:render({},"bad")])
 def test_rejections(action):
     with pytest.raises(ValueError): action()
+
+
+def test_partition_retries_and_invalid_outputs():
+    from markovq.batch import endpoint_plan,run_partition,merge_partitions
+    plan=endpoint_plan([[0,1],[1,0]],[1,0],3,100,seed=6,batch_size=60)
+    first,second=(run_partition(plan,i) for i in range(2))
+    close(merge_partitions(plan,[second,first]).counts,[0,100])
+    close(run_partition(plan,1).counts,second.counts)
+    bad=[[],[first,first],[first._replace(fingerprint="x"),second],[first._replace(counts=np.ones(2)),second]]
+    for items in bad:
+        with pytest.raises(ValueError):merge_partitions(plan,items)
+    with pytest.raises(ValueError):run_partition(plan,2)
+    with pytest.raises(ValueError):simulate_endpoints(np.eye(2),[0,1],0,2,seed=3,workers=0)
+
+
+def test_spectral_network_communities():
+    from markovq.networks import spectral_communities
+    assert spectral_communities(np.eye(3))["status"]=="connected-components"
+    assert spectral_communities(np.ones((3,3)))["status"]=="degenerate"
+    labels=spectral_communities([[0,1],[1,0]])["labels"]
+    assert labels[0]*labels[1]==-1
+    with pytest.raises(ValueError):spectral_communities([[0,-1],[-1,0]])

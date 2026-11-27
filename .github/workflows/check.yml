@@ -17,6 +17,13 @@ jobs:
       - run: python -m pip install '.[references]' pytest coverage mypy ruff build twine
       - if: matrix.python == '3.12'
         run: python -m pip install '.[interop]'
+      - if: matrix.python == '3.12'
+        run: python -Werror -m benchmarks.applied /tmp/markovq-studies
+      - if: matrix.python == '3.12'
+        uses: actions/upload-artifact@v4
+        with:
+          name: applied-scientific-studies
+          path: /tmp/markovq-studies
       - name: Development diagnostics
         run: |
           python -m mypy --ignore-missing-imports markovq || true
