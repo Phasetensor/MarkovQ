@@ -108,3 +108,15 @@ def test_layout_resources(level):
     ident = QuantumCircuit(2)
     r = circuits.circuit_resources(ident, ident)
     assert r["physical_qubits_addressed"] == r["ancillary_qubits"] == 0
+
+
+def test_unknown_layout_and_execution_accounting():
+    from qiskit import QuantumCircuit
+    from qiskit.providers.basic_provider import BasicSimulator
+
+    r = circuits.circuit_resources(QuantumCircuit(2), QuantumCircuit(4))
+    assert r["represented_logical_qubits"] is None and r["ancillary_qubits"] is None
+    step = circuits.graph_circuit(np.eye(3))
+    r = circuits.execute_backend(step, [1, 0, 0, 0], BasicSimulator(), shots=8, seed=7)
+    assert r["requested_shots"] == r["returned_shots"] == 8
+    assert r["measurement_count"] == 2

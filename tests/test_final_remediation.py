@@ -123,3 +123,15 @@ def test_export_statuses():
         k: json.loads(v)
         for k, v in list(csv.reader(io.StringIO(render(result, "csv"))))[1:]
     } == data
+
+
+def test_scientific_provenance_and_precision():
+    for value, status in [(0, "missing"), (np.nan, "invalid")]:
+        with pytest.raises(ValueError):
+            scientific_value(value, status, "source")
+    assert scientific_value(-np.inf, "infinite", "analytic limit")["sign"] == "negative"
+    assert json.loads(render({"x": np.int32(5)}))["x"] == 5
+    long = np.longdouble("1.234567890123456789")
+    assert json.loads(render({"x": long}))["x"] is not None
+    with pytest.raises(ValueError):
+        estimator_report(np.nan, None)

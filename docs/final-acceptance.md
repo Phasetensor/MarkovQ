@@ -18,7 +18,7 @@ The crambin contact graph has 46 residues and 203 edges. On the five fixed seed 
 
 ![Held-out AUROC](crambin-ranking.svg)
 
-Reproduce the figure with python -m benchmarks.applied_figure docs/case-studies/study-5.json. On the local macOS run, the 256-state kernel occupied 10,220 CSR bytes. Two processes took a median 1.047 seconds for 10,000 trajectories of length 16. Process startup dominates this small workload. The [raw results](applied-benchmarks.json) include single-process measurements and variability.
+Reproduce the figure with python -m benchmarks.applied_figure docs/case-studies/study-5.json. On the local macOS run, the 256-state kernel occupied 10,220 CSR bytes. Two processes took a median 1.054 seconds for 10,000 trajectories of length 16. Process startup dominates this small workload. The [raw results](applied-benchmarks.json) include single-process measurements and variability.
 
 The PhaseTensor experiment allocated 10,000 simulated pilot and final shots through ShotWeave. Independent reference and distribution samples brought the total to 39,936. The sequential comparison for IIZ was inconclusive at tolerance 0.1. The position-level test measured total variation 0.124 under the specified synthetic readout. This evidence concerns a simulator with a known generating model.
 

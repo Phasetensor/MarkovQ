@@ -52,8 +52,13 @@ def search_cost_record(result, index: int) -> dict:
     statuses = result.resource_status(index)
     costs = result.expected_cost(index)
     return {
-        key: _quantity(costs[key], "overflow" if status == "finite-overflow" else "infinite", status)
-        if key in costs else scientific_value(None, "missing", status)
+        key: _quantity(
+            costs[key],
+            "overflow" if status == "finite-overflow" else "infinite",
+            status,
+        )
+        if key in costs
+        else scientific_value(None, "missing", status)
         for key, status in statuses.items()
     }
 
@@ -74,9 +79,17 @@ def _encode(value):
                 "unconditional detection time",
             ),
         )
-        for name in ("spectral_radius", "condition_bound", "relative_residual", "hermiticity_error", "minimum_eigenvalue"):
+        for name in (
+            "spectral_radius",
+            "condition_bound",
+            "relative_residual",
+            "hermiticity_error",
+            "minimum_eigenvalue",
+        ):
             if np.isnan(fields["diagnostics"][name]):
-                fields["diagnostics"][name] = scientific_value(None, "missing", "solver diagnostic unavailable")
+                fields["diagnostics"][name] = scientific_value(
+                    None, "missing", "solver diagnostic unavailable"
+                )
         return _encode(fields)
     if isinstance(value, Passage):
         return _encode(

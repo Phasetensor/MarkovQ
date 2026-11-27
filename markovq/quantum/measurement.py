@@ -99,6 +99,7 @@ class DetectionDiagnostics(NamedTuple):
     unconditional_status: str
     dark_amplitude: float
     dark_amplitude_error: float
+    dark_weight_status: str
 
 
 class EventualDetection(NamedTuple):
@@ -238,12 +239,16 @@ def eventual_detection(
     )
     unconditional = np.nan
     unconditional_status = "unresolved"
+    weight_status = "ambiguous-subspace" if ambiguous else "below-resolution"
     if np.any(v[~reachable] != 0):
+        weight_status = "certified-positive-component"
         unconditional, unconditional_status = np.inf, "infinite"
     elif not ambiguous:
         if bright.shape[1] == int(reachable.sum()):
+            weight_status = "zero-in-resolved-model"
             unconditional, unconditional_status = mean, mean_status
         elif dark_amp > error:
+            weight_status = "numerically-positive"
             unconditional, unconditional_status = np.inf, "infinite"
     diag = DetectionDiagnostics(
         status,
@@ -262,6 +267,7 @@ def eventual_detection(
         unconditional_status,
         dark_amp,
         error,
+        weight_status,
     )
     return EventualDetection(prob, mean, dark, diag)
 

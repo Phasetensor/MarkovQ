@@ -15,14 +15,6 @@ jobs:
         with:
           python-version: ${{ matrix.python }}
       - run: python -m pip install '.[references]' pytest coverage mypy ruff build twine
-      - name: Review diagnostics
-        run: |
-          python -m ruff check --fix . || true
-          python -m ruff format .
-          git diff | gzip -c | base64 -w0 | sed 's/^/FORMATTED_PATCH=/'
-          echo
-          python -m mypy --ignore-missing-imports markovq || true
-          curl -sS -o /dev/null -w 'PyPI project status %{http_code}\n' https://pypi.org/pypi/markovq/json
       - if: matrix.python == '3.12'
         run: python -m pip install '.[interop]'
       - if: matrix.python == '3.12'

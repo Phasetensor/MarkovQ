@@ -14,7 +14,7 @@ Baseline 05c29d621ef10ecb7bb8c4631a96c46b2440c5c3. The seven findings concern ex
 
 ## Public result field inventory
 
-Use named attributes when consuming results. In particular EventualDetection exposes probability, conditional_mean, dark_projector and diagnostics. DetectionDiagnostics adds unconditional_status, dark_amplitude and dark_amplitude_error. Mixing includes finite_spectral, limit_sensitivity_tv, spectral_status and unresolved_splitting_tv. SearchResult retains best_index and success and includes log_success. SearchResult.expected_cost and resource_status use an explicit candidate index. The following inventory describes the current development snapshot.
+Use named attributes when consuming results. In particular EventualDetection exposes probability, conditional_mean, dark_projector and diagnostics. DetectionDiagnostics adds unconditional_status, dark_amplitude, dark_amplitude_error and dark_weight_status. Mixing includes finite_spectral, limit_sensitivity_tv, spectral_status and unresolved_splitting_tv. SearchResult retains best_index and success and includes log_success. SearchResult.expected_cost and resource_status use an explicit candidate index. The following inventory describes the current development snapshot.
 
 - `BatchResult` — counts, standard_errors, batches, storage_bytes
 
@@ -32,7 +32,7 @@ Use named attributes when consuming results. In particular EventualDetection exp
 
 - `Detection` — first, survival, surviving_ket
 
-- `DetectionDiagnostics` — status, mean_status, unconditional_mean, phase_tol, rank_tol, dark_invariance_residual, dark_target_residual, probability_range, spectral_radius, condition_bound, relative_residual, hermiticity_error, minimum_eigenvalue, unconditional_status, dark_amplitude, dark_amplitude_error
+- `DetectionDiagnostics` — status, mean_status, unconditional_mean, phase_tol, rank_tol, dark_invariance_residual, dark_target_residual, probability_range, spectral_radius, condition_bound, relative_residual, hermiticity_error, minimum_eigenvalue, unconditional_status, dark_amplitude, dark_amplitude_error, dark_weight_status
 
 - `EventualDetection` — probability, conditional_mean, dark_projector, diagnostics
 
@@ -49,3 +49,11 @@ Use named attributes when consuming results. In particular EventualDetection exp
 - `SzegedyWalk` — A, B, reflection_a, reflection_b, operator, discriminant
 
 - `Spectrum` — values, vectors, residual, orthogonality_error
+
+## Release preparation
+
+The PyPI JSON endpoint for the normalized name markovq returned HTTP 404 during the readiness check. This establishes the absence of a public listing at that time. It does not reserve the name or verify that a pending publisher is configured. The target is v0.1.0. The package and citation metadata remain at 0.1.0.dev0 pending approval. The tag-only workflow checks the package version against the tag, builds once, verifies the SHA-256 manifest, produces GitHub provenance and submits the same distributions through PyPI OIDC. The source archive includes the license, citation, benchmarks, residue data, reports and typed package sources.
+
+A release operator must configure or confirm the PyPI pending publisher for Phasetensor/MarkovQ, workflow release.yml, environment pypi. Configure release approval and tag permissions in the repository settings. Version promotion, tagging, publication and public installation verification are subsequent release operations. The scientific workflow performs an isolated wheel installation and tests the development archives.
+
+The independent rerun of [44 scaling scenarios](final-scaling.json) uses the original consolidation benchmark, graph sizes and seeds. The applied benchmarks retain their original seed choices, including the five held-out residue ranking evaluations. The final projection status distinguishes an exactly identified positive coordinate component, a numerically positive weight, a zero in the resolved model, a weight below resolution, and an ambiguous subspace.

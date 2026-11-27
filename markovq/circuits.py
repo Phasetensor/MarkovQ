@@ -99,7 +99,7 @@ def simulate(
     started = perf_counter()
     n = circuit.num_qubits
     v = ket(initial, 2**n)
-    prepared = QuantumCircuit(*circuit.qregs)
+    prepared = QuantumCircuit(list(circuit.qubits))
     prepared.prepare_state(v, range(n))
     prepared.compose(circuit, inplace=True)
     probabilities = Statevector.from_instruction(prepared).probabilities()
@@ -139,7 +139,7 @@ def execute_backend(circuit, initial: ArrayLike, backend, *, shots: int, seed: i
         raise ValueError("backend execution requires positive shots")
     started = perf_counter()
     n = circuit.num_qubits
-    prepared = QuantumCircuit(*circuit.qregs)
+    prepared = QuantumCircuit(list(circuit.qubits))
     prepared.prepare_state(ket(initial, 2**n), range(n))
     prepared.compose(circuit, inplace=True)
     prepared.measure_all()

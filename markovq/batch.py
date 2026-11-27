@@ -5,7 +5,7 @@ from __future__ import annotations
 import hashlib
 import struct
 from concurrent.futures import ProcessPoolExecutor
-from dataclasses import dataclass
+from dataclasses import dataclass, replace
 from typing import Iterable, NamedTuple
 
 import numpy as np
@@ -98,6 +98,8 @@ def _verify(plan):
 
 
 def run_partition(plan: EndpointPlan, index: int) -> Partition:
+    # Snapshot both mutable containers before verifying the inputs used below.
+    plan = replace(plan, transition=plan.transition.copy(), initial=plan.initial.copy())
     _verify(plan)
     i = count(index)
     if i >= plan.batches:
