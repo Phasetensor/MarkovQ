@@ -6,3 +6,5 @@ authors:
 repository-code: https://github.com/Phasetensor/MarkovQ
 license: Apache-2.0
 type: software
+version: 0.1.0
+abstract: "Scientific Python software for classical stochastic processes and quantum graph dynamics."
