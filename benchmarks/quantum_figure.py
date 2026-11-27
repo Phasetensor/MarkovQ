@@ -17,7 +17,9 @@ def render() -> None:
     for key, label in [("classical_msd", "Classical"), ("quantum_msd", "Hadamard")]:
         axes[0].loglog(steps, [row[key] for row in spread], "o-", label=label)
     axes[0].set(
-        xlabel="Steps", ylabel="Mean squared displacement", title="Spreading on the line"
+        xlabel="Steps",
+        ylabel="Mean squared displacement",
+        title="Spreading on the line",
     )
     axes[0].legend()
     monitored = data["monitored"]
